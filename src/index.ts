@@ -1,5 +1,7 @@
 import mineflayer from "mineflayer";
 import {OpenAI} from "openai";
+import {Agent} from "./Agent.ts";
+import {LLM} from "./LLM.ts";
 
 const bot = mineflayer.createBot({
     host: 'localhost',
@@ -11,30 +13,22 @@ const bot = mineflayer.createBot({
 const client = new OpenAI({
     baseURL: 'http://localhost:11434/v1',
     apiKey: 'ignored'
+});
+
+const llm = new LLM(client);
+
+const agent = new Agent({
+    bot,
+    llm
 })
 
 bot.on('chat', async (username, message) => {
     console.log(`<${username}> ${message}`);
-
     if (username === bot.username) return
 
-    const res = await client.chat.completions.create({
-        model: "granite4:3b",
-        messages: [
-            { role: 'system', content:
-                    `You are a agent in the video game Minecraft.
-                     You are directly interacting with the player (in chat) and the minecraft world.
-                    
-                     Keep your answers really short, do not cross the message length limit of 255 characters.`
-            },
-            { role: 'system', content: `The name of the player you are talking to is "${username}"`},
-            { role: "user", content: message },
-        ],
+    const res = await agent.respond(username, message);
 
-    })
-
-    const aimsg = res.choices[0]!.message.content
-    bot.chat(aimsg ?? '')
+    bot.chat(res ?? '')
 })
 
 // Log errors and kick reasons:

@@ -15,7 +15,7 @@ const client = new OpenAI({
     apiKey: 'ignored'
 });
 
-const llm = new LLM(client);
+const llm = new LLM(client, 'gpt-oss:120b-cloud');
 
 const agent = new Agent({
     bot,

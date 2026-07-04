@@ -2,27 +2,33 @@ import type {AgentContext} from "./AgentContext.ts";
 import {ToolRegistry} from "./tools/ToolRegistry.ts";
 
 export class Agent {
+    private messageHistory: any[] = [];
+
     constructor(private ctx: AgentContext) {}
 
     async respond(username: string, message: string) {
+        this.messageHistory = this.messageHistory.slice(-50)
+
         const msgs: any[] = [
                 {
                     role: 'system',
                     content: `
+You are the Minecraft Agent named "${this.ctx.bot.username}"
+You are NOT the player.
+
+You are talking to the player "${username}".
+
+When someone asks:
+- "Who are you?" -> describe yourself
+- "Who am I?" -> describe them using their player name
+- "Where are you?" -> use get_bot_position().
+- "Where am I?" -> user get_player_position().
+
+Never guess or invent information.
 Keep your responses short. Do not overexplain.
-
-You have access to tools.
-
-If a question requires information about:
-- your position
-- the world
-- your inventory
-- nearby entities
-
-you MUST call the appropriate tool.
-
-Never guess or invent this information.`,
+`,
                 },
+                ...this.messageHistory,
                 {
                     role: 'user',
                     content: message,
@@ -59,6 +65,17 @@ Never guess or invent this information.`,
             }
 
             if (tool_calls.length === 0) {
+                this.messageHistory.push({
+                    role: 'user',
+                    content: message,
+                    name: username,
+                })
+
+                this.messageHistory.push({
+                    role: 'assistant',
+                    content
+                })
+
                 return content;
             }
         }

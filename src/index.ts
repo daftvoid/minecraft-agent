@@ -1,4 +1,6 @@
 import mineflayer from "mineflayer";
+import { pathfinder, Movements, goals } from 'mineflayer-pathfinder'
+
 import {OpenAI} from "openai";
 import {Agent} from "./Agent.ts";
 import {LLM} from "./LLM.ts";
@@ -36,3 +38,5 @@ bot.on('chat', async (username, message) => {
 // Log errors and kick reasons:
 bot.on('kicked', console.log)
 bot.on('error', console.log)
+
+bot.loadPlugin(pathfinder)

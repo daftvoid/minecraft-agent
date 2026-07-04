@@ -47,10 +47,7 @@ Keep your responses short. Do not overexplain.
             const content = aimsg.content;
             const tool_calls = aimsg.tool_calls ?? [];
 
-            msgs.push({
-                role: 'assistant',
-                content,
-            })
+            msgs.push(aimsg)
 
             for (const toolcall of tool_calls.filter(t => t.type === 'function')) {
                 const res = await ToolRegistry.execute(toolcall, this.ctx)

@@ -3,6 +3,7 @@ import type {AgentContext} from "../AgentContext.ts";
 import {get_agent_position} from "./tools/get_agent_position.ts";
 import {get_player_position} from "./tools/get_player_position.ts";
 import {move_near} from "./tools/move_near.ts";
+import {move_near_player} from "./tools/move_near_player.ts";
 
 interface ToolCall {
     id: string;
@@ -19,7 +20,8 @@ export class ToolRegistry {
     private static readonly tools: Tool[] = [
         get_agent_position,
         get_player_position,
-        move_near
+        move_near,
+        move_near_player
     ];
 
     static get schemas() {

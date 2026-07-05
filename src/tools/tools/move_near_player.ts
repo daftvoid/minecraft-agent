@@ -1,13 +1,14 @@
 import type {Tool} from "../Tool.ts";
+import {get_player_position} from "./get_player_position.ts";
+import {move_near} from "./move_near.ts";
 
-export const get_player_position: Tool = {
+export const move_near_player: Tool = {
     schema: {
         type: 'function',
         function: {
-            name: 'get_player_position',
+            name: 'move_near_player',
             description: `
-            Returns the players's current world coordinates.
-            Use ONLY when you need the players's current location to answer a question or complete a task.
+            Moves near a player. Use this instead of calling \`get_player_position\` and \`move_near\` separately.
             `,
             parameters: {
                 type: 'object',
@@ -35,6 +36,6 @@ export const get_player_position: Tool = {
 
         const pos = player.position.clone()
 
-        return `X: ${Math.floor(pos.x)}, Y: ${Math.floor(pos.y)}, Z: ${Math.floor(pos.z)}`;
+        return await move_near.execute({x: pos.x, y: pos.y, z: pos.z}, ctx)
     }
 }

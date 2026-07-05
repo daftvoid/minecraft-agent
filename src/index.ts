@@ -24,19 +24,73 @@ const agent = new Agent({
     llm
 })
 
-bot.on('chat', async (username, message) => {
-    console.log(`<${username}> ${message}`);
-
-    if (username === bot.username) return;
-    if (username === 's') return;
-
-    const res = await agent.respond(username, message);
-
-    bot.chat(res ?? '')
-})
-
 // Log errors and kick reasons:
 bot.on('kicked', console.log)
 bot.on('error', console.log)
+
+bot.on('message', async message => {
+    const translate = message.translate;
+
+    if (!translate) return;
+
+    const texts: string[] = message.json.with.map((w: any) => w.text as string);
+
+    switch (translate) {
+        case '<%s> %s': // chat
+        {
+            const [username, msg] = texts
+            console.log(`<${username}> ${msg}`);
+
+            if (username === bot.username) return;
+
+            const res = await agent.respond(username!, msg!);
+            bot.chat(String(res).toString())
+
+            break;
+        }
+
+        case '%s whispers to you: %s': // whisper
+        {
+            const [username, msg] = texts
+            console.log(message.toAnsi());
+
+            if (username === bot.username) return;
+
+            const res = await agent.respond(username!, msg!, true);
+            bot.chat(String(res).toString())
+
+            break;
+        }
+
+        case 'You whisper to %s: %s':
+            console.log(message.toAnsi())
+
+            break;
+
+        case 'multiplayer.player.joined':
+        {
+            const [username] = texts
+
+            console.log(message.toAnsi())
+
+            break;
+        }
+
+        case 'multiplayer.player.left':
+        {
+            const [username] = texts
+
+            console.log(message.toAnsi())
+
+            break;
+        }
+
+        default:
+            // system message
+            console.log(message);
+
+            break;
+    }
+})
 
 bot.loadPlugin(pathfinder)

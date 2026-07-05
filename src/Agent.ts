@@ -6,7 +6,7 @@ export class Agent {
 
     constructor(private ctx: AgentContext) {}
 
-    async respond(username: string, message: string) {
+    async respond(username: string, message: string, whisper?: boolean) {
         this.messageHistory = this.messageHistory.slice(-50)
 
         const msgs: any[] = [
@@ -26,6 +26,10 @@ When someone asks:
 
 Never guess or invent information.
 Keep your responses short. Do not overexplain.
+
+${whisper ? 'The players message is whispered.' : 'The players message is public and not whispered'}
+Whispering means that the message can only be read by you and the player.
+If you want to whisper or think the message should be private, use \`/msg <username>\` before your response.
 `,
                 },
                 ...this.messageHistory,

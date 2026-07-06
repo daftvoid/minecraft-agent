@@ -1,10 +1,16 @@
 import type {AgentContext} from "./AgentContext.ts";
 import {ToolRegistry} from "./tools/ToolRegistry.ts";
+import type {Observation} from "./observation/Observation.ts";
 
 export class Agent {
     private messageHistory: any[] = [];
+    private observations: Observation[] = [];
 
     constructor(private ctx: AgentContext) {}
+
+    observe(observation: Observation) {
+        this.observations.push(observation);
+    }
 
     async respond(username: string, message: string, whisper?: boolean) {
         this.messageHistory = this.messageHistory.slice(-50)

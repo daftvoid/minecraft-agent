@@ -62,12 +62,12 @@ bot.on('message', async message => {
             break;
         }
 
-        case 'You whisper to %s: %s':
+        case 'You whisper to %s: %s': // whisper (self)
             console.log(message.toAnsi())
 
             break;
 
-        case 'multiplayer.player.joined':
+        case 'multiplayer.player.joined': // player joined
         {
             const [username] = texts
 
@@ -76,7 +76,7 @@ bot.on('message', async message => {
             break;
         }
 
-        case 'multiplayer.player.left':
+        case 'multiplayer.player.left': // player left
         {
             const [username] = texts
 

@@ -5,10 +5,17 @@ export abstract class Observation {
     abstract shouldWake: boolean;
 
     abstract toPrompt(): string;
+
+    toMessages(): any[] {
+        return [{
+            role: 'system',
+            content: this.toPrompt(),
+        }]
+    }
 }
 
 
-class ChatObservation extends Observation {
+export class ChatObservation extends Observation {
     priority = 'high' as ObservationPriority;
     shouldWake = true;
 
@@ -22,10 +29,17 @@ class ChatObservation extends Observation {
     toPrompt() {
         return `${this.player} said: "${this.message}"`;
     }
+
+    override toMessages(): any[] {
+        return [{
+            role: 'user',
+            content: this.toPrompt(),
+        }]
+    }
 }
 
 
-class PlayerJoinedObservation extends Observation {
+export class PlayerJoinedObservation extends Observation {
     priority = 'medium' as ObservationPriority;
     shouldWake = true;
 
@@ -39,11 +53,21 @@ class PlayerJoinedObservation extends Observation {
 }
 
 
-class NightObservation extends Observation {
+export class NightObservation extends Observation {
     priority = 'low' as ObservationPriority;
     shouldWake = false;
 
     toPrompt() {
         return 'It has become night.';
+    }
+}
+
+
+export class AgentJoinedObservation extends Observation {
+    priority = 'high' as ObservationPriority;
+    shouldWake = true;
+
+    toPrompt() {
+        return 'You just joined the game.';
     }
 }

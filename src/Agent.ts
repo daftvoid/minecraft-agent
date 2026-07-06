@@ -1,6 +1,7 @@
 import type {AgentContext} from "./AgentContext.ts";
 import {ToolRegistry} from "./tools/ToolRegistry.ts";
 import type {Observation} from "./observation/Observation.ts";
+import {PromptBuilder} from "./PromptBuilder.ts";
 
 export class Agent {
     private messageHistory: any[] = [];
@@ -12,40 +13,31 @@ export class Agent {
         this.observations.push(observation);
     }
 
-    async respond(username: string, message: string, whisper?: boolean) {
+    async think() {
+        const msgs = [
+            PromptBuilder.build(this.ctx),
+            ...this.messageHistory,
+            ...this.observations.flatMap(o => o.toMessages())
+        ];
+
+        const response = await this.runConversation(msgs);
+
+        this.messageHistory.push(
+            ...this.observations.flatMap(o => o.toMessages()),
+            {
+                role: "assistant",
+                content: response
+            }
+        );
+
         this.messageHistory = this.messageHistory.slice(-50)
 
-        const msgs: any[] = [
-                {
-                    role: 'system',
-                    content: `
-You are the Minecraft Agent named "${this.ctx.bot.username}"
-You are NOT the player.
+        this.observations = [];
 
-You are talking to the player "${username}".
+        return response;
+    }
 
-When someone asks:
-- "Who are you?" -> describe yourself
-- "Who am I?" -> describe them using their player name
-- "Where are you?" -> use get_bot_position().
-- "Where am I?" -> user get_player_position().
-
-Never guess or invent information.
-Keep your responses short. Do not overexplain.
-
-${whisper ? 'The players message is whispered.' : 'The players message is public and not whispered'}
-Whispering means that the message can only be read by you and the player.
-If you want to whisper or think the message should be private, use \`/msg <username>\` before your response.
-`,
-                },
-                ...this.messageHistory,
-                {
-                    role: 'user',
-                    content: message,
-                    name: username,
-                }
-            ]
-
+    private async runConversation(msgs: any[]) {
         while (true) {
             const res = await this.ctx.llm.chat(
                 msgs,
@@ -72,17 +64,6 @@ If you want to whisper or think the message should be private, use \`/msg <usern
             }
 
             if (tool_calls.length === 0) {
-                this.messageHistory.push({
-                    role: 'user',
-                    content: message,
-                    name: username,
-                })
-
-                this.messageHistory.push({
-                    role: 'assistant',
-                    content
-                })
-
                 return content;
             }
         }

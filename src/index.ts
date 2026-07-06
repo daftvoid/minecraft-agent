@@ -4,6 +4,7 @@ import { pathfinder, Movements, goals } from 'mineflayer-pathfinder'
 import {OpenAI} from "openai";
 import {Agent} from "./Agent.ts";
 import {LLM} from "./LLM.ts";
+import {AgentJoinedObservation, ChatObservation} from "./observation/Observation.ts";
 
 const bot = mineflayer.createBot({
     host: 'localhost',
@@ -43,8 +44,7 @@ bot.on('message', async message => {
 
             if (username === bot.username) return;
 
-            const res = await agent.respond(username!, msg!);
-            bot.chat(String(res).toString())
+            agent.observe(new ChatObservation(username!, msg!))
 
             break;
         }
@@ -56,8 +56,7 @@ bot.on('message', async message => {
 
             if (username === bot.username) return;
 
-            const res = await agent.respond(username!, msg!, true);
-            bot.chat(String(res).toString())
+            agent.observe(new ChatObservation(username!, msg!));
 
             break;
         }
@@ -87,10 +86,19 @@ bot.on('message', async message => {
 
         default:
             // system message
-            console.log(message);
+            console.log(message.toAnsi());
 
             break;
     }
 })
+
+bot.once('spawn', () => {
+    agent.observe(new AgentJoinedObservation())
+})
+
+setInterval(() => {
+    console.log('AI thinking...');
+    agent.think().then(m => bot.chat(m!))
+}, 10000)
 
 bot.loadPlugin(pathfinder)

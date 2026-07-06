@@ -4,11 +4,16 @@ import { pathfinder, Movements, goals } from 'mineflayer-pathfinder'
 import {OpenAI} from "openai";
 import {Agent} from "./Agent.ts";
 import {LLM} from "./LLM.ts";
-import {AgentJoinedObservation, ChatObservation} from "./observation/Observation.ts";
+import {
+    AgentJoinedObservation,
+    ChatObservation, NightObservation,
+    PlayerJoinedObservation,
+    PlayerLeftObservation
+} from "./observation/Observation.ts";
 
 const bot = mineflayer.createBot({
     host: 'localhost',
-    username: 'Bot',
+    username: 'Bot2',
     auth: 'offline'
     // port: 25565,
 })
@@ -72,6 +77,8 @@ bot.on('message', async message => {
 
             console.log(message.toAnsi())
 
+            agent.observe(new PlayerJoinedObservation(username!))
+
             break;
         }
 
@@ -80,6 +87,8 @@ bot.on('message', async message => {
             const [username] = texts
 
             console.log(message.toAnsi())
+
+            agent.observe(new PlayerLeftObservation(username!))
 
             break;
         }
@@ -96,9 +105,25 @@ bot.once('spawn', () => {
     agent.observe(new AgentJoinedObservation())
 })
 
+let day = true
+
+bot.on('time', () => {
+    if (day !== bot.time.isDay) {
+        day = bot.time.isDay;
+
+        if (day) {
+
+        } else {
+            agent.observe(new NightObservation())
+        }
+    }
+})
+
 setInterval(() => {
-    console.log('AI thinking...');
-    agent.think().then(m => bot.chat(m!))
-}, 10000)
+    console.log(agent.pressure);
+    agent.requestThinking().then(m => {
+        if (m) bot.chat(m)
+    })
+}, 5000)
 
 bot.loadPlugin(pathfinder)

@@ -1,19 +1,37 @@
 import type {AgentContext} from "./AgentContext.ts";
 import {ToolRegistry} from "./tools/ToolRegistry.ts";
-import type {Observation} from "./observation/Observation.ts";
+import  {type Observation} from "./observation/Observation.ts";
 import {PromptBuilder} from "./PromptBuilder.ts";
+import * as console from "node:console";
 
 export class Agent {
     private messageHistory: any[] = [];
     private observations: Observation[] = [];
 
+    private static readonly pressureThreshold: number = 15;
+    private _pressure = 0;
+    private thinking = false;
+
+    get pressure(): number {
+        return this._pressure;
+    }
+
     constructor(private ctx: AgentContext) {}
 
     observe(observation: Observation) {
         this.observations.push(observation);
+        this._pressure += observation.priority;
     }
 
-    async think() {
+    async requestThinking() {
+        if (this.thinking) {return;}
+        if (this._pressure < Agent.pressureThreshold) {
+            this._pressure++;
+            return;
+        }
+
+        this.thinking = true;
+
         const msgs = [
             PromptBuilder.build(this.ctx),
             ...this.messageHistory,
@@ -33,6 +51,8 @@ export class Agent {
         this.messageHistory = this.messageHistory.slice(-50)
 
         this.observations = [];
+        this.thinking = false;
+        this._pressure = 0
 
         return response;
     }

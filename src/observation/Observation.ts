@@ -1,7 +1,5 @@
-export type ObservationPriority = 'low' | 'medium' | 'high';
-
 export abstract class Observation {
-    abstract priority: ObservationPriority;
+    abstract priority: number;
     abstract shouldWake: boolean;
 
     abstract toPrompt(): string;
@@ -16,7 +14,7 @@ export abstract class Observation {
 
 
 export class ChatObservation extends Observation {
-    priority = 'high' as ObservationPriority;
+    priority = 15;
     shouldWake = true;
 
     constructor(
@@ -40,7 +38,7 @@ export class ChatObservation extends Observation {
 
 
 export class PlayerJoinedObservation extends Observation {
-    priority = 'medium' as ObservationPriority;
+    priority = 10;
     shouldWake = true;
 
     constructor(public player: string) {
@@ -53,8 +51,22 @@ export class PlayerJoinedObservation extends Observation {
 }
 
 
+export class PlayerLeftObservation extends Observation {
+    priority = 5;
+    shouldWake = false;
+
+    constructor(public player: string) {
+        super();
+    }
+
+    toPrompt() {
+        return `${this.player} left the game.`;
+    }
+}
+
+
 export class NightObservation extends Observation {
-    priority = 'low' as ObservationPriority;
+    priority = 10;
     shouldWake = false;
 
     toPrompt() {
@@ -64,7 +76,7 @@ export class NightObservation extends Observation {
 
 
 export class AgentJoinedObservation extends Observation {
-    priority = 'high' as ObservationPriority;
+    priority = 20;
     shouldWake = true;
 
     toPrompt() {

@@ -106,7 +106,6 @@ bot.once('spawn', () => {
 
 
     setInterval(() => {
-        console.log(agent.pressure);
         agent.requestThinking().then(m => {
             if (m) {
                 console.log(m);

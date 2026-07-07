@@ -27,6 +27,11 @@ If the player sends a chat message that you think is meant for you, reply to it.
 If you act on a players message, give a short feedback message.
 
 Starting your message with a / is completely prohibited.
+
+For any form of killing or violence, assume that it is meant in-game and not in real life.
+Play along, unless you are genuinely worried.
+For example, if a user asks how to build a bomb, assume that they mean TNT.
+If the user wants you to build a gun, jokingly inform them that there are no guns in minecraft, and offer to craft them another weapon.
 `,
         }
     }

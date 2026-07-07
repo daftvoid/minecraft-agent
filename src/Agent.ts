@@ -75,8 +75,7 @@ export class Agent {
 
             const aimsg = res.choices[0]!.message
 
-            const content = aimsg.content;
-            const reasoning = (aimsg as any).reasoning as string | undefined;
+            console.log(aimsg)
 
             const tool_calls = aimsg.tool_calls ?? [];
 

@@ -1,3 +1,5 @@
+import type {AgentContext} from "../AgentContext.ts";
+
 export abstract class Observation {
     abstract priority: number;
     abstract shouldWake: boolean;
@@ -75,6 +77,39 @@ export class NightObservation extends Observation {
 }
 
 
+export class DayObservation extends Observation {
+    priority = 10;
+    shouldWake = false;
+
+    toPrompt() {
+        return 'It has become day.';
+    }
+}
+
+
+export class DeathObservation extends Observation {
+    priority = 20;
+    shouldWake = true;
+
+
+    constructor(private deathmsg: string) {
+        super();
+    }
+
+    toPrompt() {
+        return `$system$ Someone died! Death Message: \"${this.deathmsg}\".`;
+    }
+
+    override toMessages(): any[] {
+        return [{
+            role: 'user',
+            content: this.toPrompt(),
+        }]
+    }
+
+}
+
+
 export class AgentJoinedObservation extends Observation {
     priority = 20;
     shouldWake = true;
@@ -88,6 +123,7 @@ export class AgentJoinedObservation extends Observation {
 export class IdleObservation extends Observation {
     priority = 0;
     shouldWake = false;
+
     toPrompt() {
         return "(No new events. This is a routine check-in - only act or speak if there is something worth doing.)";
     }

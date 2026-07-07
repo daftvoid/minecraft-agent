@@ -6,7 +6,7 @@ import {Agent} from "./Agent.ts";
 import {LLM} from "./LLM.ts";
 import {
     AgentJoinedObservation,
-    ChatObservation, NightObservation,
+    ChatObservation, DayObservation, DeathObservation, NightObservation,
     PlayerJoinedObservation,
     PlayerLeftObservation
 } from "./observation/Observation.ts";
@@ -94,6 +94,10 @@ bot.on('message', async message => {
         }
 
         default:
+            if (translate.startsWith('death')) {
+                agent.observe(new DeathObservation(message.toString()))
+            }
+
             // system message
             console.log(message.toAnsi());
 
@@ -111,13 +115,12 @@ bot.once('spawn', () => {
 })
 
 let day = true
-
 bot.on('time', () => {
     if (day !== bot.time.isDay) {
         day = bot.time.isDay;
 
         if (day) {
-            // day observation ???
+            agent.observe(new DayObservation())
         } else {
             agent.observe(new NightObservation())
         }

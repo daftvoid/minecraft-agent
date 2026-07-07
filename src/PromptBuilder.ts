@@ -3,6 +3,13 @@ import {ToolRegistry} from "./tools/ToolRegistry.ts";
 
 export class PromptBuilder {
     static build(ctx: AgentContext) {
+        const timeContext = `
+It's currently ${ctx.bot.time.isDay ? 'daytime' : 'nighttime'}
+It's the ${ctx.bot.time.day} day of this minecraft world.`;
+
+        const gameContext = `
+You are in gamemode: ${ctx.bot.game.gameMode}, playing on difficulty: ${ctx.bot.game.hardcore ? 'hardcore' : ctx.bot.game.difficulty}
+You are currently in dimension: ${ctx.bot.game.dimension} on a ${ctx.bot.game.serverBrand} server.`
 
         return {
             role: 'system',
@@ -32,6 +39,10 @@ For any form of killing or violence, assume that it is meant in-game and not in 
 Play along, unless you are genuinely worried.
 For example, if a user asks how to build a bomb, assume that they mean TNT.
 If the user wants you to build a gun, jokingly inform them that there are no guns in minecraft, and offer to craft them another weapon.
+
+${timeContext}
+
+${gameContext}
 `,
         }
     }

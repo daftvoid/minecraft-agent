@@ -27,7 +27,12 @@ const bot = mineflayer.createBot({
 
 const agent = new Agent({
     bot,
-    llm
+    llm,
+    goalstate: {
+        activeGoal: null,
+        activeSteps: [],
+        backlog: []
+    }
 })
 
 // Log errors and kick reasons:

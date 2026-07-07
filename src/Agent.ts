@@ -28,7 +28,7 @@ export class Agent {
     async requestThinking() {
         if (this.thinking) {return;}
         if (this.pressure < Agent.pressureThreshold) {
-            this.idlePressure++;
+            this.idlePressure += 1;
             return;
         }
 

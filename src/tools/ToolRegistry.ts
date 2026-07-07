@@ -6,6 +6,11 @@ import {move_near} from "./tools/move_near.ts";
 import {move_near_player} from "./tools/move_near_player.ts";
 import {chat} from "./tools/chat.ts";
 import {leave_game} from "./tools/leave_game.ts";
+import {set_goal} from "./tools/set_goal.ts";
+import {start_step} from "./tools/start_step.ts";
+import {fail_step} from "./tools/fail_step.ts";
+import {complete_step} from "./tools/complete_step.ts";
+import {complete_goal} from "./tools/complete_goal.ts";
 
 interface ToolCall {
     id: string;
@@ -25,7 +30,16 @@ export class ToolRegistry {
         move_near,
         move_near_player,
         chat,
-        leave_game
+        leave_game,
+
+        // goals
+        set_goal,
+        complete_goal,
+
+        // steps
+        start_step,
+        fail_step,
+        complete_step
     ];
 
     static get schemas() {

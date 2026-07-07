@@ -83,3 +83,12 @@ export class AgentJoinedObservation extends Observation {
         return 'You just joined the game.';
     }
 }
+
+
+export class IdleObservation extends Observation {
+    priority = 0;
+    shouldWake = false;
+    toPrompt() {
+        return "(No new events. This is a routine check-in - only act or speak if there is something worth doing.)";
+    }
+}

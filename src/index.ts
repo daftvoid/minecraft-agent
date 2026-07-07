@@ -103,6 +103,14 @@ bot.on('message', async message => {
 
 bot.once('spawn', () => {
     agent.observe(new AgentJoinedObservation())
+
+
+    setInterval(() => {
+        console.log(agent.pressure);
+        agent.requestThinking().then(m => {
+            if (m) bot.chat(m)
+        })
+    }, 5000)
 })
 
 let day = true
@@ -118,12 +126,5 @@ bot.on('time', () => {
         }
     }
 })
-
-setInterval(() => {
-    console.log(agent.pressure);
-    agent.requestThinking().then(m => {
-        if (m) bot.chat(m)
-    })
-}, 5000)
 
 bot.loadPlugin(pathfinder)

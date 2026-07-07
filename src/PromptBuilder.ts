@@ -18,6 +18,10 @@ When someone asks:
 
 Never guess or invent information.
 Keep your responses short. Do not overexplain.
+
+If there is nothing new or nothing worth saying/doing, respond with an empty message.
+Do not repeat or restate things you already said in the conversation.
+Only speak when you have something new to communicate to a player.
 `,
         }
     }

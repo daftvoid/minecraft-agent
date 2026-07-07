@@ -1,6 +1,6 @@
 import type {AgentContext} from "./AgentContext.ts";
 import {ToolRegistry} from "./tools/ToolRegistry.ts";
-import  {type Observation} from "./observation/Observation.ts";
+import {IdleObservation, type Observation} from "./observation/Observation.ts";
 import {PromptBuilder} from "./PromptBuilder.ts";
 import * as console from "node:console";
 
@@ -9,52 +9,65 @@ export class Agent {
     private observations: Observation[] = [];
 
     private static readonly pressureThreshold: number = 15;
-    private _pressure = 0;
+    private idlePressure = 0;
     private thinking = false;
 
     get pressure(): number {
-        return this._pressure;
+        return this.idlePressure + this.observations.map(o => o.priority).reduce((a, b) => a + b, 0);
     }
 
     constructor(private ctx: AgentContext) {}
 
     observe(observation: Observation) {
         this.observations.push(observation);
-        this._pressure += observation.priority;
+        if (observation.shouldWake) this.requestThinking().then(m => {
+            if (m) this.ctx.bot.chat(m)
+        })
     }
 
     async requestThinking() {
         if (this.thinking) {return;}
-        if (this._pressure < Agent.pressureThreshold) {
-            this._pressure++;
+        if (this.pressure < Agent.pressureThreshold) {
+            this.idlePressure++;
             return;
+        }
+
+        if (this.idlePressure === this.pressure) {
+            this.observe(new IdleObservation());
         }
 
         this.thinking = true;
 
-        const msgs = [
-            PromptBuilder.build(this.ctx),
-            ...this.messageHistory,
-            ...this.observations.flatMap(o => o.toMessages())
-        ];
+        try {
+            const msgs = [
+                PromptBuilder.build(this.ctx),
+                ...this.messageHistory,
+                ...this.observations.flatMap(o => o.toMessages())
+            ];
 
-        const response = await this.runConversation(msgs);
+            const response = await this.runConversation(msgs);
 
-        this.messageHistory.push(
-            ...this.observations.flatMap(o => o.toMessages()),
-            {
-                role: "assistant",
-                content: response
-            }
-        );
+            this.messageHistory.push(
+                ...this.observations.flatMap(o => o.toMessages()),
+                {
+                    role: "assistant",
+                    content: response.content,
+                    reasoning: response.reasoning
+                }
+            );
 
-        this.messageHistory = this.messageHistory.slice(-50)
+            console.log(response)
 
-        this.observations = [];
-        this.thinking = false;
-        this._pressure = 0
+            this.messageHistory = this.messageHistory.slice(-50)
 
-        return response;
+            return response.content;
+        } catch (e) {
+            throw e;
+        } finally {
+            this.observations = [];
+            this.thinking = false;
+            this.idlePressure = 0
+        }
     }
 
     private async runConversation(msgs: any[]) {
@@ -67,6 +80,8 @@ export class Agent {
             const aimsg = res.choices[0]!.message
 
             const content = aimsg.content;
+            const reasoning = (aimsg as any).reasoning as string | undefined;
+
             const tool_calls = aimsg.tool_calls ?? [];
 
             msgs.push(aimsg)
@@ -84,7 +99,7 @@ export class Agent {
             }
 
             if (tool_calls.length === 0) {
-                return content;
+                return {content, reasoning};
             }
         }
     }

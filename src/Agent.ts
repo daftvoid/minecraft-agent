@@ -21,7 +21,10 @@ export class Agent {
     observe(observation: Observation) {
         this.observations.push(observation);
         if (observation.shouldWake) this.requestThinking().then(m => {
-            if (m) this.ctx.bot.chat(m)
+            if (m) {
+                console.log(m);
+                this.ctx.bot.chat(`${m}`)
+            }
         })
     }
 

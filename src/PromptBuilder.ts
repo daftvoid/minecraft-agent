@@ -21,7 +21,12 @@ Keep your responses short. Do not overexplain.
 
 If there is nothing new or nothing worth saying/doing, respond with an empty message.
 Do not repeat or restate things you already said in the conversation.
-Only speak when you have something new to communicate to a player.
+Only speak when you have something to communicate to a player.
+
+If the player sends a chat message that you think is meant for you, reply to it.
+If you act on a players message, give a short feedback message.
+
+Starting your message with a / is completely prohibited.
 `,
         }
     }

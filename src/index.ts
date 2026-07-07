@@ -108,7 +108,9 @@ bot.once('spawn', () => {
     setInterval(() => {
         console.log(agent.pressure);
         agent.requestThinking().then(m => {
-            if (m) bot.chat(m)
+            if (m) {
+                console.log(m);
+            }
         })
     }, 5000)
 })
@@ -120,7 +122,7 @@ bot.on('time', () => {
         day = bot.time.isDay;
 
         if (day) {
-
+            // day observation ???
         } else {
             agent.observe(new NightObservation())
         }

@@ -4,6 +4,7 @@ import {get_agent_position} from "./tools/get_agent_position.ts";
 import {get_player_position} from "./tools/get_player_position.ts";
 import {move_near} from "./tools/move_near.ts";
 import {move_near_player} from "./tools/move_near_player.ts";
+import {chat} from "./tools/chat.ts";
 
 interface ToolCall {
     id: string;
@@ -21,7 +22,8 @@ export class ToolRegistry {
         get_agent_position,
         get_player_position,
         move_near,
-        move_near_player
+        move_near_player,
+        chat
     ];
 
     static get schemas() {
@@ -32,7 +34,7 @@ export class ToolRegistry {
         const tool = ToolRegistry.tools.find(t => t.schema.function.name === toolcall.function.name);
 
         if (!tool) {
-            throw new Error('Tool does not exist!');
+            throw new Error(`Tool does not exist: ${toolcall.function.name}`);
         }
 
         return await tool.execute(JSON.parse(toolcall.function.arguments), ctx)

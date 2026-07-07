@@ -20,12 +20,9 @@ export class Agent {
 
     observe(observation: Observation) {
         this.observations.push(observation);
-        if (observation.shouldWake) this.requestThinking().then(m => {
-            if (m) {
-                console.log(m);
-                this.ctx.bot.chat(`${m}`)
-            }
-        })
+        if (observation.shouldWake) {
+            this.requestThinking()
+        }
     }
 
     async requestThinking() {
@@ -52,18 +49,12 @@ export class Agent {
 
             this.messageHistory.push(
                 ...this.observations.flatMap(o => o.toMessages()),
-                {
-                    role: "assistant",
-                    content: response.content,
-                    reasoning: response.reasoning
-                }
+                ...response
             );
-
-            console.log(response)
 
             this.messageHistory = this.messageHistory.slice(-50)
 
-            return response.content;
+            return response;
         } catch (e) {
             throw e;
         } finally {
@@ -73,10 +64,12 @@ export class Agent {
         }
     }
 
-    private async runConversation(msgs: any[]) {
+    private async runConversation(baseMsgs: any[]) {
+        const msgs = [];
+
         while (true) {
             const res = await this.ctx.llm.chat(
-                msgs,
+                [...baseMsgs, ...msgs],
                 ToolRegistry.schemas
             )
 
@@ -102,7 +95,7 @@ export class Agent {
             }
 
             if (tool_calls.length === 0) {
-                return {content, reasoning};
+                return msgs
             }
         }
     }

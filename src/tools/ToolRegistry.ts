@@ -5,6 +5,7 @@ import {get_player_position} from "./tools/get_player_position.ts";
 import {move_near} from "./tools/move_near.ts";
 import {move_near_player} from "./tools/move_near_player.ts";
 import {chat} from "./tools/chat.ts";
+import {leave_game} from "./tools/leave_game.ts";
 
 interface ToolCall {
     id: string;
@@ -23,7 +24,8 @@ export class ToolRegistry {
         get_player_position,
         move_near,
         move_near_player,
-        chat
+        chat,
+        leave_game
     ];
 
     static get schemas() {

@@ -8,7 +8,6 @@ export const get_agent_position: Tool = {
             description: `
             Returns the agent's current world coordinates.
             Use ONLY when you need the agent's current location to answer a question or complete a task.
-            Do NOT call this tool if the user is asking what the tool does
             `,
         }
     },

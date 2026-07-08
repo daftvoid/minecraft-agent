@@ -11,6 +11,8 @@ import {start_step} from "./tools/start_step.ts";
 import {fail_step} from "./tools/fail_step.ts";
 import {complete_step} from "./tools/complete_step.ts";
 import {complete_goal} from "./tools/complete_goal.ts";
+import {get_inventory} from "./tools/get_inventory.ts";
+import {dig_block} from "./tools/dig_block.ts";
 
 interface ToolCall {
     id: string;
@@ -39,7 +41,12 @@ export class ToolRegistry {
         // steps
         start_step,
         fail_step,
-        complete_step
+        complete_step,
+
+        // getter
+        get_inventory,
+
+        dig_block
     ];
 
     static get schemas() {

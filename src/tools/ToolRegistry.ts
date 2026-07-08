@@ -13,6 +13,8 @@ import {complete_step} from "./tools/complete_step.ts";
 import {complete_goal} from "./tools/complete_goal.ts";
 import {get_inventory} from "./tools/get_inventory.ts";
 import {dig_block} from "./tools/dig_block.ts";
+import {get_block} from "./tools/get_block.ts";
+import {edit_sign_text} from "./tools/edit_sign_text.ts";
 
 interface ToolCall {
     id: string;
@@ -45,8 +47,11 @@ export class ToolRegistry {
 
         // getter
         get_inventory,
+        get_block,
 
-        dig_block
+        dig_block,
+
+        edit_sign_text
     ];
 
     static get schemas() {
@@ -60,6 +65,6 @@ export class ToolRegistry {
             throw new Error(`Tool does not exist: ${toolcall.function.name}`);
         }
 
-        return await tool.execute(JSON.parse(toolcall.function.arguments), ctx)
+        return (await tool.execute(JSON.parse(toolcall.function.arguments), ctx)).trim()
     }
 }

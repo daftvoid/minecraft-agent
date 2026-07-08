@@ -6,7 +6,7 @@ export const get_inventory: Tool = {
         function: {
             name: 'get_inventory',
             description: `
-            Returns the agent's inventory.
+            Returns the agent's inventory as a list. Includes item durability and enchantments, if available.
             `,
         }
     },

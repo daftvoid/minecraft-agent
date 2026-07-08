@@ -1,9 +1,11 @@
 import type {Bot} from "mineflayer";
 import type {LLM} from "./LLM.ts";
 import type {GoalState} from "./goals/Goal.ts";
+import type {TaskManager} from "./tasks/TaskManager.ts";
 
 export interface AgentContext {
     bot: Bot;
     llm: LLM;
-    goalstate: GoalState;
+    goalState: GoalState;
+    tasks: TaskManager;
 }

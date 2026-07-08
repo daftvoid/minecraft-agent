@@ -1,13 +1,14 @@
 import type {Tool} from "../Tool.ts";
 import {Movements, goals} from "mineflayer-pathfinder";
 import {Vec3} from "vec3";
+import {DigAreaTask} from "../../tasks/tasks/DigAreaTask.ts";
 
 export const dig_area: Tool = {
     schema: {
         type: "function",
         function: {
             name: "dig_area",
-            description: "Dig out all blocks within a rectangular area, defined by two opposite corners (inclusive). Use this for clearing, flattening, or excavating a region in one operation, rather than digging block by block. Returns a summary once the whole area is done, not per-block updates.",
+            description: "Dig out all blocks within a rectangular area, defined by two opposite corners (inclusive). Use this for clearing, flattening, or excavating a region in one operation, rather than digging block by block. Starts a task, therefore only returns wheter the task was started successfully.",
             parameters: {
                 type: "object",
                 properties: {
@@ -28,8 +29,6 @@ export const dig_area: Tool = {
     },
 
     async execute(args, ctx) {
-        const bot = ctx.bot;
-
         const { x1, y1, z1, x2, y2, z2, skip_unbreakable } = args as {
             x1: number;
             y1: number;
@@ -40,30 +39,8 @@ export const dig_area: Tool = {
             skip_unbreakable?: boolean;
         }
 
-        for (let y = y1; y <= y2; y++) {
-            for (let x = x1; x <= x2; x++) {
-                for (let z = z1; z <= z2; z++) {
-                    const block = bot.blockAt(new Vec3(x, y, z));
+        ctx.tasks.add(new DigAreaTask(ctx, x1, y1, z1, x2, y2, z2))
 
-                    if (!block) {
-                        if (skip_unbreakable) {
-                            continue;
-                        }
-
-                        return `No block at X: ${x}, Y: ${y}, Z: ${z}`;
-                    }
-
-                    const defaultMove = new Movements(bot)
-
-                    bot.pathfinder.setMovements(defaultMove)
-
-                    await bot.pathfinder.goto(new goals.GoalNear(x, y, z, 3))
-
-                    await bot.dig(block)
-                }
-            }
-        }
-
-        return `Mined area from X: ${x1}, Y: ${y1}, Z: ${z1} to X: ${x2}, Y: ${y2}, Z: ${z2}`;
+        return `Started DigAreaTask from X: ${x1}, Y: ${y1}, Z: ${z1} to X: ${x2}, Y: ${y2}, Z: ${z2}`;
     }
 }

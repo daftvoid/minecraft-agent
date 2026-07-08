@@ -10,6 +10,7 @@ import {
     PlayerJoinedObservation,
     PlayerLeftObservation
 } from "./observation/Observation.ts";
+import {TaskManager} from "./tasks/TaskManager.ts";
 
 const client = new OpenAI({
     baseURL: 'http://localhost:11434/v1',
@@ -28,11 +29,12 @@ const bot = mineflayer.createBot({
 const agent = new Agent({
     bot,
     llm,
-    goalstate: {
+    goalState: {
         activeGoal: null,
         activeSteps: [],
         backlog: []
-    }
+    },
+    tasks: new TaskManager()
 })
 
 // Log errors and kick reasons:
@@ -112,11 +114,6 @@ bot.on('message', async message => {
 
 bot.once('spawn', () => {
     agent.observe(new AgentJoinedObservation())
-
-
-    setInterval(() => {
-        agent.requestThinking()
-    }, 5000)
 })
 
 let day = true
@@ -130,6 +127,10 @@ bot.on('time', () => {
             agent.observe(new NightObservation())
         }
     }
+})
+
+bot.on('physicsTick', () => {
+    agent.tick()
 })
 
 bot.loadPlugin(pathfinder)

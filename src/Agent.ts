@@ -25,10 +25,18 @@ export class Agent {
         }
     }
 
+    async tick() {
+        if (!this.ctx.tasks.busy) {
+            this.ctx.tasks.tick()
+        }
+
+        this.requestThinking()
+    }
+
     async requestThinking() {
         if (this.thinking) {return;}
         if (this.pressure < Agent.pressureThreshold) {
-            this.idlePressure += 1;
+            this.idlePressure += 0.05 / 2;
             return;
         }
 

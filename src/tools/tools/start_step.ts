@@ -24,7 +24,7 @@ export const start_step: Tool = {
             id: string;
         };
 
-        const step = ctx.goalstate.activeSteps.find(g => g.id === id);
+        const step = ctx.goalState.activeSteps.find(g => g.id === id);
 
         if (!step) {
             return `ERROR: No step with this id exists.`;

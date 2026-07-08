@@ -23,8 +23,8 @@ export const complete_goal: Tool = {
     async execute(args, ctx) {
         const {summary} = args as {summary: string};
 
-        ctx.goalstate.activeGoal = null;
-        ctx.goalstate.activeSteps = [];
+        ctx.goalState.activeGoal = null;
+        ctx.goalState.activeSteps = [];
 
         return `Goal completed: ${summary}`;
     }

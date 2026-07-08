@@ -15,6 +15,7 @@ import {get_inventory} from "./tools/get_inventory.ts";
 import {dig_block} from "./tools/dig_block.ts";
 import {get_block} from "./tools/get_block.ts";
 import {edit_sign_text} from "./tools/edit_sign_text.ts";
+import {dig_area} from "./tools/dig_area.ts";
 
 interface ToolCall {
     id: string;
@@ -50,6 +51,7 @@ export class ToolRegistry {
         get_block,
 
         dig_block,
+        dig_area,
 
         edit_sign_text
     ];

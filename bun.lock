@@ -5,6 +5,7 @@
     "": {
       "name": "minecraft-agent",
       "dependencies": {
+        "minecraft-data": "^3.111.0",
         "mineflayer": "^4.37.1",
         "mineflayer-pathfinder": "^2.4.5",
         "nanoid": "^5.1.16",

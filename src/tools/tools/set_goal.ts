@@ -1,4 +1,5 @@
 import type {Tool} from "../Tool.ts";
+import {nanoid} from "nanoid";
 
 export const set_goal: Tool = {
     schema: {
@@ -34,7 +35,7 @@ export const set_goal: Tool = {
         steps.forEach(step => {
             ctx.goalstate.activeSteps.push({
                 desc: step,
-                id: crypto.randomUUID(),
+                id: nanoid(6),
                 status: 'pending'
             })
         })

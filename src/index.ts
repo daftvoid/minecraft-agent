@@ -17,7 +17,7 @@ const client = new OpenAI({
     apiKey: 'ignored'
 });
 
-const llm = new LLM(client, 'gpt-oss:120b-cloud');
+const llm = new LLM(client, 'gpt-oss:20b-cloud');
 
 const bot = mineflayer.createBot({
     host: 'localhost',

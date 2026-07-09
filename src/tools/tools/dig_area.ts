@@ -39,7 +39,9 @@ export const dig_area: Tool = {
             skip_unbreakable?: boolean;
         }
 
-        ctx.tasks.add(new DigAreaTask(ctx, x1, y1, z1, x2, y2, z2))
+        const task = new DigAreaTask(ctx, x1, y1, z1, x2, y2, z2)
+
+        ctx.tasks.add(task)
 
         return `Started DigAreaTask from X: ${x1}, Y: ${y1}, Z: ${z1} to X: ${x2}, Y: ${y2}, Z: ${z2}`;
     }

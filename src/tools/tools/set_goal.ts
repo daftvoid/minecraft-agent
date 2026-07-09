@@ -30,10 +30,10 @@ export const set_goal: Tool = {
             goal: string, steps: string[]
         };
 
-        ctx.goalstate.activeGoal = goal;
+        ctx.goalState.activeGoal = goal;
 
         steps.forEach(step => {
-            ctx.goalstate.activeSteps.push({
+            ctx.goalState.activeSteps.push({
                 desc: step,
                 id: nanoid(6),
                 status: 'pending'

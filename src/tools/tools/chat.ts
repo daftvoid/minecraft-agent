@@ -23,7 +23,7 @@ export const chat: Tool = {
     async execute(args, ctx) {
         const bot = ctx.bot;
 
-        const {message} = args as any;
+        const message = (args as { message: string }).message
 
         bot.chat(message);
         console.log(message);

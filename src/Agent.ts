@@ -36,7 +36,7 @@ export class Agent {
     async requestThinking() {
         if (this.thinking) {return;}
         if (this.pressure < Agent.pressureThreshold) {
-            this.idlePressure += 0.05 / 2;
+            this.idlePressure += 1 / 100; // 1 every 100 ticks (1 every 5 seconds)
             return;
         }
 

@@ -3,5 +3,5 @@ import type {AgentContext} from "../AgentContext.ts";
 
 export interface Tool {
     schema: OpenAI.Chat.Completions.ChatCompletionFunctionTool
-    execute: (args: unknown, ctx: AgentContext) => Promise<string>;
+    execute: (args: any, ctx: AgentContext) => Promise<string>;
 }

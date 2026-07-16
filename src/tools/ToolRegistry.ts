@@ -18,6 +18,7 @@ import {edit_sign_text} from "./tools/edit_sign_text.ts";
 import {dig_area} from "./tools/dig_area.ts";
 import {stop_task} from "./tools/stop_task.ts";
 import {get_time} from "./tools/get_time.ts";
+import {get_item_from_creative} from "./tools/get_item_from_creative.ts";
 
 interface ToolCall {
     id: string;
@@ -32,8 +33,6 @@ export class ToolRegistry {
     private constructor() {}
 
     private static readonly tools: Tool[] = [
-        get_agent_position,
-        get_player_position,
         move_near,
         move_near_player,
         chat,
@@ -49,9 +48,12 @@ export class ToolRegistry {
         complete_step,
 
         // getter
+        get_agent_position,
+        get_player_position,
         get_inventory,
         get_block,
         get_time,
+        get_item_from_creative,
 
         dig_block,
         dig_area,

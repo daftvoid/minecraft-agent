@@ -6,7 +6,7 @@ import {Agent} from "./Agent.ts";
 import {LLM} from "./LLM.ts";
 import {
     AgentJoinedObservation,
-    ChatObservation, DayObservation, DeathObservation, NightObservation,
+    ChatObservation, DayObservation, DeathObservation, ItemPickupObservation, NightObservation,
     PlayerJoinedObservation,
     PlayerLeftObservation
 } from "./observation/Observation.ts";
@@ -131,6 +131,16 @@ bot.on('time', () => {
 
 bot.on('physicsTick', () => {
     agent.tick()
+})
+
+bot.on('playerCollect', (p, itemEntity) => {
+    if (p.username !== bot.username) return;
+
+    const item = itemEntity.getDroppedItem();
+
+    if (!item) return;
+
+    agent.observe(new ItemPickupObservation(item))
 })
 
 bot.loadPlugin(pathfinder)

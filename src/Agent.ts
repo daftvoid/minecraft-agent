@@ -19,7 +19,12 @@ export class Agent {
     constructor(private ctx: AgentContext) {}
 
     observe(observation: Observation) {
-        this.observations.push(observation);
+        const mergedInto = this.observations.find(o => o.merge(observation))
+
+        if (!mergedInto) {
+            this.observations.push(observation);
+        }
+
         if (observation.shouldWake) {
             this.requestThinking()
         }

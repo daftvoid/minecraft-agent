@@ -27,6 +27,11 @@ const bot = mineflayer.createBot({
     // port: 25565,
 })
 
+// Log errors and kick reasons:
+bot.on('kicked', console.log)
+bot.on('error', console.log)
+
+
 bot.once('spawn', () => {
     const agent = new Agent({
         bot,
@@ -40,9 +45,6 @@ bot.once('spawn', () => {
         mcData: minecraftData(bot.version),
     })
 
-// Log errors and kick reasons:
-    bot.on('kicked', console.log)
-    bot.on('error', console.log)
 
     bot.on('message', async message => {
         const translate = message.translate;

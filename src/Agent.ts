@@ -19,7 +19,12 @@ export class Agent {
     constructor(private ctx: AgentContext) {}
 
     observe(observation: Observation) {
-        this.observations.push(observation);
+        const mergedInto = this.observations.find(o => o.merge(observation))
+
+        if (!mergedInto) {
+            this.observations.push(observation);
+        }
+
         if (observation.shouldWake) {
             this.requestThinking()
         }
@@ -36,7 +41,7 @@ export class Agent {
     async requestThinking() {
         if (this.thinking) {return;}
         if (this.pressure < Agent.pressureThreshold) {
-            this.idlePressure += 0.05 / 2;
+            this.idlePressure += 1 / 100; // 1 every 100 ticks (1 every 5 seconds)
             return;
         }
 
@@ -69,6 +74,11 @@ export class Agent {
             this.observations = [];
             this.thinking = false;
             this.idlePressure = 0
+
+            // cleanup code for container windows
+            if (this.ctx.bot.currentWindow) {
+                this.ctx.bot.closeWindow(this.ctx.bot.currentWindow)
+            }
         }
     }
 

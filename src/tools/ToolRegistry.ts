@@ -14,10 +14,15 @@ import {complete_goal} from "./tools/complete_goal.ts";
 import {get_inventory} from "./tools/get_inventory.ts";
 import {dig_block} from "./tools/dig_block.ts";
 import {get_block} from "./tools/get_block.ts";
-import {edit_sign_text} from "./tools/edit_sign_text.ts";
 import {dig_area} from "./tools/dig_area.ts";
 import {stop_task} from "./tools/stop_task.ts";
 import {get_time} from "./tools/get_time.ts";
+import {get_item_from_creative} from "./tools/get_item_from_creative.ts";
+import {open_container} from "./tools/open_container.ts";
+import {withdraw_item} from "./tools/withdraw_item.ts";
+import {deposit_item} from "./tools/deposit_item.ts";
+import {find_blocks} from "./tools/find_blocks.ts";
+import {find_containers} from "./tools/find_containers.ts";
 
 interface ToolCall {
     id: string;
@@ -32,8 +37,6 @@ export class ToolRegistry {
     private constructor() {}
 
     private static readonly tools: Tool[] = [
-        get_agent_position,
-        get_player_position,
         move_near,
         move_near_player,
         chat,
@@ -49,14 +52,23 @@ export class ToolRegistry {
         complete_step,
 
         // getter
+        get_agent_position,
+        get_player_position,
         get_inventory,
         get_block,
         get_time,
+        get_item_from_creative,
+
+        // container
+        open_container,
+        withdraw_item,
+        deposit_item,
+
+        find_blocks,
+        find_containers,
 
         dig_block,
         dig_area,
-
-        edit_sign_text,
 
         // stop task
         stop_task

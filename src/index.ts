@@ -1,23 +1,28 @@
 import mineflayer from "mineflayer";
-import { pathfinder, Movements, goals } from 'mineflayer-pathfinder'
+import {pathfinder} from 'mineflayer-pathfinder'
 
 import {OpenAI} from "openai";
 import {Agent} from "./Agent.ts";
 import {LLM} from "./LLM.ts";
 import {
     AgentJoinedObservation,
-    ChatObservation, DayObservation, DeathObservation, NightObservation,
+    ChatObservation,
+    DayObservation,
+    DeathObservation,
+    ItemPickupObservation,
+    NightObservation,
     PlayerJoinedObservation,
     PlayerLeftObservation
 } from "./observation/Observation.ts";
 import {TaskManager} from "./tasks/TaskManager.ts";
+import minecraftData from "minecraft-data";
 
 const client = new OpenAI({
     baseURL: 'http://localhost:11434/v1',
     apiKey: 'ignored'
 });
 
-const llm = new LLM(client, 'gpt-oss:20b-cloud');
+const llm = new LLM(client, 'gpt-oss:120b-cloud');
 
 const bot = mineflayer.createBot({
     host: 'localhost',
@@ -26,111 +31,127 @@ const bot = mineflayer.createBot({
     // port: 25565,
 })
 
-const agent = new Agent({
-    bot,
-    llm,
-    goalState: {
-        activeGoal: null,
-        activeSteps: [],
-        backlog: []
-    },
-    tasks: new TaskManager()
-})
-
 // Log errors and kick reasons:
 bot.on('kicked', console.log)
 bot.on('error', console.log)
 
-bot.on('message', async message => {
-    const translate = message.translate;
-
-    if (!translate) return;
-
-    const texts: string[] = message.json.with.map((w: any) => w.text as string);
-
-    switch (translate) {
-        case '<%s> %s': // chat
-        {
-            const [username, msg] = texts
-            console.log(`<${username}> ${msg}`);
-
-            if (username === bot.username) return;
-
-            agent.observe(new ChatObservation(username!, msg!))
-
-            break;
-        }
-
-        case '%s whispers to you: %s': // whisper
-        {
-            const [username, msg] = texts
-            console.log(message.toAnsi());
-
-            if (username === bot.username) return;
-
-            agent.observe(new ChatObservation(username!, msg!));
-
-            break;
-        }
-
-        case 'You whisper to %s: %s': // whisper (self)
-            console.log(message.toAnsi())
-
-            break;
-
-        case 'multiplayer.player.joined': // player joined
-        {
-            const [username] = texts
-
-            console.log(message.toAnsi())
-
-            agent.observe(new PlayerJoinedObservation(username!))
-
-            break;
-        }
-
-        case 'multiplayer.player.left': // player left
-        {
-            const [username] = texts
-
-            console.log(message.toAnsi())
-
-            agent.observe(new PlayerLeftObservation(username!))
-
-            break;
-        }
-
-        default:
-            if (translate.startsWith('death')) {
-                agent.observe(new DeathObservation(message.toString()))
-            }
-
-            // system message
-            console.log(message.toAnsi());
-
-            break;
-    }
-})
 
 bot.once('spawn', () => {
-    agent.observe(new AgentJoinedObservation())
-})
+    const agent = new Agent({
+        bot,
+        llm,
+        goalState: {
+            activeGoal: null,
+            activeSteps: [],
+            backlog: []
+        },
+        tasks: new TaskManager(),
+        mcData: minecraftData(bot.version),
+    })
 
-let day = true
-bot.on('time', () => {
-    if (day !== bot.time.isDay) {
-        day = bot.time.isDay;
 
-        if (day) {
-            agent.observe(new DayObservation())
-        } else {
-            agent.observe(new NightObservation())
+    bot.on('message', async message => {
+        const translate = message.translate;
+
+        if (!translate) return;
+
+        const texts: string[] = message.json.with.map((w: any) => w.text as string);
+
+        switch (translate) {
+            case '<%s> %s': // chat
+            {
+                const [username, msg] = texts
+                console.log(`<${username}> ${msg}`);
+
+                if (username === bot.username) return;
+
+                agent.observe(new ChatObservation(username!, msg!))
+
+                break;
+            }
+
+            case '%s whispers to you: %s': // whisper
+            {
+                const [username, msg] = texts
+                console.log(message.toAnsi());
+
+                if (username === bot.username) return;
+
+                agent.observe(new ChatObservation(username!, msg!));
+
+                break;
+            }
+
+            case 'You whisper to %s: %s': // whisper (self)
+                console.log(message.toAnsi())
+
+                break;
+
+            case 'multiplayer.player.joined': // player joined
+            {
+                const [username] = texts
+
+                console.log(message.toAnsi())
+
+                agent.observe(new PlayerJoinedObservation(username!))
+
+                break;
+            }
+
+            case 'multiplayer.player.left': // player left
+            {
+                const [username] = texts
+
+                console.log(message.toAnsi())
+
+                agent.observe(new PlayerLeftObservation(username!))
+
+                break;
+            }
+
+            default:
+                if (translate.startsWith('death')) {
+                    agent.observe(new DeathObservation(message.toString()))
+                }
+
+                // system message
+                console.log(message.toAnsi());
+
+                break;
         }
-    }
+    })
+
+    bot.once('spawn', () => {
+        agent.observe(new AgentJoinedObservation())
+    })
+
+    let day = true
+    bot.on('time', () => {
+        if (day !== bot.time.isDay) {
+            day = bot.time.isDay;
+
+            if (day) {
+                agent.observe(new DayObservation())
+            } else {
+                agent.observe(new NightObservation())
+            }
+        }
+    })
+
+    bot.on('physicsTick', () => {
+        agent.tick()
+    })
+
+    bot.on('playerCollect', (p, itemEntity) => {
+        if (p.username !== bot.username) return;
+
+        const item = itemEntity.getDroppedItem();
+
+        if (!item) return;
+
+        agent.observe(new ItemPickupObservation(item))
+    })
 })
 
-bot.on('physicsTick', () => {
-    agent.tick()
-})
 
 bot.loadPlugin(pathfinder)

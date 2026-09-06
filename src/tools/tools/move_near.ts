@@ -7,7 +7,8 @@ export const move_near: Tool = {
         function: {
             name: 'move_near',
             description: `
-            Moves the agent near a position. Automatically pathfinds there.
+            Moves the agent near a position. Automatically pathfinds there. 
+            A response by this tool means the moving has been initiated, it does not mean that you've reached your goal. 
             `,
             parameters: {
                 type: 'object',

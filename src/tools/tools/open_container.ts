@@ -41,9 +41,16 @@ export const open_container: Tool = {
 
         const block = bot.blockAt(new Vec3(x, y, z))
 
-        if (!block) {
+        if (!block || block.name === "air") {
             return `No block at that position found.`
         }
+
+        if (block.position.distanceTo(bot.entity.position.clone() as Vec3) > 5) {
+            return 'Block is too far away.'
+        }
+
+        console.log(block)
+
 
         const window = await bot.openBlock(block)
 

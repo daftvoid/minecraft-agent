@@ -21,6 +21,8 @@ import {get_item_from_creative} from "./tools/get_item_from_creative.ts";
 import {open_container} from "./tools/open_container.ts";
 import {withdraw_item} from "./tools/withdraw_item.ts";
 import {deposit_item} from "./tools/deposit_item.ts";
+import {find_blocks} from "./tools/find_blocks.ts";
+import {find_containers} from "./tools/find_containers.ts";
 
 interface ToolCall {
     id: string;
@@ -61,6 +63,9 @@ export class ToolRegistry {
         open_container,
         withdraw_item,
         deposit_item,
+
+        find_blocks,
+        find_containers,
 
         dig_block,
         dig_area,

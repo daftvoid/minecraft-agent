@@ -23,6 +23,7 @@ import {withdraw_item} from "./tools/withdraw_item.ts";
 import {deposit_item} from "./tools/deposit_item.ts";
 import {find_blocks} from "./tools/find_blocks.ts";
 import {find_containers} from "./tools/find_containers.ts";
+import {find_entities} from "./tools/find_entities.ts";
 
 interface ToolCall {
     id: string;
@@ -66,6 +67,7 @@ export class ToolRegistry {
 
         find_blocks,
         find_containers,
+        find_entities,
 
         dig_block,
         dig_area,

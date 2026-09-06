@@ -108,7 +108,7 @@ export class DeathObservation extends Observation {
     }
 
     toPrompt() {
-        return `$system$ Someone died! Death Message: \"${this.deathmsg}\".`;
+        return `%system% Someone died! Death Message: \"${this.deathmsg}\".`;
     }
 
     override toMessages(): any[] {

@@ -74,6 +74,11 @@ export class Agent {
             this.observations = [];
             this.thinking = false;
             this.idlePressure = 0
+
+            // cleanup code for container windows
+            if (this.ctx.bot.currentWindow) {
+                this.ctx.bot.closeWindow(this.ctx.bot.currentWindow)
+            }
         }
     }
 

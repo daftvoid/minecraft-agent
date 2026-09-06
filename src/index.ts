@@ -1,12 +1,16 @@
 import mineflayer from "mineflayer";
-import { pathfinder, Movements, goals } from 'mineflayer-pathfinder'
+import {pathfinder} from 'mineflayer-pathfinder'
 
 import {OpenAI} from "openai";
 import {Agent} from "./Agent.ts";
 import {LLM} from "./LLM.ts";
 import {
     AgentJoinedObservation,
-    ChatObservation, DayObservation, DeathObservation, ItemPickupObservation, NightObservation,
+    ChatObservation,
+    DayObservation,
+    DeathObservation,
+    ItemPickupObservation,
+    NightObservation,
     PlayerJoinedObservation,
     PlayerLeftObservation
 } from "./observation/Observation.ts";
@@ -18,7 +22,7 @@ const client = new OpenAI({
     apiKey: 'ignored'
 });
 
-const llm = new LLM(client, 'gpt-oss:20b-cloud');
+const llm = new LLM(client, 'gpt-oss:120b-cloud');
 
 const bot = mineflayer.createBot({
     host: 'localhost',

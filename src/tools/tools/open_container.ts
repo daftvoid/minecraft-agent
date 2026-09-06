@@ -49,11 +49,7 @@ export const open_container: Tool = {
             return 'Block is too far away.'
         }
 
-        console.log(block)
-
-
         const window = await bot.openBlock(block)
-
 
         const items = window.containerItems()
 

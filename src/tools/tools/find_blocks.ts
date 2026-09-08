@@ -9,22 +9,24 @@ export const find_blocks: Tool = {
             parameters: {
                 type: 'object',
                 properties: {
-                    block: { type: 'string' },
+                    regex: { type: 'string' },
                     radius: { type: 'number' },
                     count: { type: 'number' }
                 },
-                required: ['block']
+                required: ['regex']
             }
         }
     },
 
     async execute(args, ctx) {
         const bot = ctx.bot;
-        const { block, radius, count } = args as { block: string, radius?: number, count?: number }
+        const { regex: block, radius, count } = args as { regex: string, radius?: number, count?: number }
+
+        const regex = new RegExp(block, "i");
 
         const blocks = bot.findBlocks({
             count: count ?? 25,
-            matching: (b) => {return b.name === block},
+            matching: (b) => {return regex.test(b.name)},
             maxDistance: radius ?? 50,
             point: undefined,
             useExtraInfo: undefined

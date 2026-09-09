@@ -22,6 +22,7 @@ export class TaskManager {
             this.current = this.taskQueue.shift()!;
         }
 
+        console.log("tick")
         await this.current.tick()
 
         if (this.current.status === 'done' || this.current.status === 'failed') {

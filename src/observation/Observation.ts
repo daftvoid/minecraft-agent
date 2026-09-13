@@ -214,3 +214,24 @@ export class TaskDoneObservation extends Observation {
         return `%system% Task "${this.task.constructor.name}" done: ` + this.task.doneMessage;
     }
 }
+
+
+export class TaskFailedObservation extends Observation {
+    priority: number = 20;
+    shouldWake: boolean = true;
+
+    constructor(private task: Task) {
+        super();
+    }
+
+    override toMessages(): any[] {
+        return [{
+            role: 'user',
+            content: this.toPrompt(),
+        }]
+    }
+
+    toPrompt(): string {
+        return `%system% Task "${this.task.constructor.name}" FAILED!`;
+    }
+}

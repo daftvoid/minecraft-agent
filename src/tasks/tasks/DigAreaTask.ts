@@ -42,7 +42,7 @@ export class DigAreaTask extends Task {
 
         const block = this.ctx.bot.blockAt(pos);
 
-        if (!block) {
+        if (!block || !block.diggable) {
             return;
         }
 

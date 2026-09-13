@@ -31,7 +31,12 @@ export class TaskManager extends (EventEmitter as new () => TypedEventEmitter<Ta
         }
 
         // tick
-        await this.current.tick()
+        try {
+            await this.current.tick()
+        } catch (error) {
+            console.error(error);
+            this.current.status = 'failed'
+        }
 
         // task done or failed w/ eventemitter
         if (this.current.status === 'done') {

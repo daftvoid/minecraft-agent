@@ -24,6 +24,10 @@ export class DigAreaTask extends Task {
         return `Digging Area from (${this.x1}, ${this.y1}, ${this.z1}) to (${this.x2}, ${this.y2}, ${this.z2})`;
     }
 
+    get doneMessage(): string {
+        return 'Area dug successfully';
+    }
+
     async tick(): Promise<void> {
         if (this.status === 'done') return;
 

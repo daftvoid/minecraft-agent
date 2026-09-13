@@ -48,6 +48,10 @@ export class KillEntityTask extends Task {
         return `Hunting Entity name=${entity.name} with id=${entity.id}`;
     }
 
+    get doneMessage(): string {
+        return 'Entity killed or out of range.';
+    }
+
     async tick(): Promise<void> {
         if (this.status === 'done') return;
 
@@ -59,9 +63,7 @@ export class KillEntityTask extends Task {
 
         const mainhand = this.ctx.bot.heldItem
 
-        const attackSpeed = mainhand && itemAttackSpeeds[mainhand.name] ? itemAttackSpeeds[mainhand.name] : 1;
-
-        console.log(attackSpeed)
+        const attackSpeed = mainhand && itemAttackSpeeds[mainhand.name] ? itemAttackSpeeds[mainhand.name] : 10;
 
         const defaultMove = new Movements(this.ctx.bot)
 
@@ -74,7 +76,7 @@ export class KillEntityTask extends Task {
         }
 
 
-        if (this.ctx.bot.time.time > this.lastAttack + 20 / (attackSpeed || 10)) {
+        if (this.ctx.bot.time.time > this.lastAttack + 20 / (attackSpeed!)) {
             this.ctx.bot.attack(entity);
             this.lastAttack = this.ctx.bot.time.time
         }

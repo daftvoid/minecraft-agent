@@ -40,6 +40,6 @@ export const set_goal: Tool = {
             })
         })
 
-        return 'Added Goal.'
+        return `Added Goal with steps: \n${ctx.goalState.activeSteps.map(s => `- ${s.id} ${s.desc}`).join('\n')}`
     }
 }

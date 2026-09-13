@@ -1,5 +1,6 @@
 import type {AgentContext} from "../AgentContext.ts";
 import type {Item} from "prismarine-item";
+import type {Task} from "../tasks/Task.ts";
 
 export abstract class Observation {
     abstract priority: number;
@@ -190,5 +191,26 @@ export class ItemPickupObservation extends Observation {
         this.items.push(...other.items)
 
         return true;
+    }
+}
+
+
+export class TaskDoneObservation extends Observation {
+    priority: number = 20;
+    shouldWake: boolean = true;
+
+    constructor(private task: Task) {
+        super();
+    }
+
+    override toMessages(): any[] {
+        return [{
+            role: 'user',
+            content: this.toPrompt(),
+        }]
+    }
+
+    toPrompt(): string {
+        return `%system% Task "${this.task.constructor.name}" done: ` + this.task.doneMessage;
     }
 }

@@ -67,7 +67,8 @@ ${goalContext}
 
 Background tasks continue after the tool returns.
 The tool returning successfully only means the task started.
-A task is complete only after a system observation tells you so.
+A task starting DOES NOT mean that is it complete yet.
+A system observation will tell you when your task is completed.
 Only one background task may run at a time.
 
 ### Your current Task

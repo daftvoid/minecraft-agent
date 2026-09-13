@@ -26,7 +26,6 @@ export const chat: Tool = {
         const message = (args as { message: string }).message
 
         bot.chat(message);
-        console.log(message);
 
         return 'message sent.'
     }

@@ -25,6 +25,7 @@ import {find_blocks} from "./tools/find_blocks.ts";
 import {find_containers} from "./tools/find_containers.ts";
 import {find_entities} from "./tools/find_entities.ts";
 import {kill_entity} from "./tools/kill_entity.ts";
+import {place_block} from "./tools/place_block.ts";
 
 interface ToolCall {
     id: string;
@@ -74,6 +75,7 @@ export class ToolRegistry {
 
         dig_block,
         dig_area,
+        place_block,
 
         // stop task
         stop_task

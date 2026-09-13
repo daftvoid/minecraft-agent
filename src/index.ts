@@ -35,9 +35,9 @@ const bot = mineflayer.createBot({
 bot.on('kicked', console.log)
 bot.on('error', console.log)
 
-
+export let agent: Agent;
 bot.once('spawn', () => {
-    const agent = new Agent({
+    agent = new Agent({
         bot,
         llm,
         goalState: {

@@ -33,4 +33,6 @@ export abstract class Task extends (EventEmitter as new () => TypedEventEmitter<
     abstract tick(): Promise<void>
 
     abstract get description(): string
+
+    abstract get doneMessage(): string
 }

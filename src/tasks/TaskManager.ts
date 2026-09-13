@@ -1,6 +1,13 @@
 import type {Task} from "./Task.ts";
+import EventEmitter from "events";
+import type TypedEventEmitter from "typed-emitter";
 
-export class TaskManager {
+type TaskManagerEvents = {
+    taskDone: (task: Task) => void;
+    taskFailed: (task: Task) => void;
+}
+
+export class TaskManager extends (EventEmitter as new () => TypedEventEmitter<TaskManagerEvents>) {
     current: Task | null = null;
     private _busy: boolean = false;
 
@@ -13,6 +20,7 @@ export class TaskManager {
     async tick() {
         this._busy = true;
 
+        // add new task from queue
         if (this.current === null) {
             if (this.taskQueue.length === 0) {
                 this._busy = false;
@@ -22,10 +30,15 @@ export class TaskManager {
             this.current = this.taskQueue.shift()!;
         }
 
-        console.log("tick")
+        // tick
         await this.current.tick()
 
-        if (this.current.status === 'done' || this.current.status === 'failed') {
+        // task done or failed w/ eventemitter
+        if (this.current.status === 'done') {
+            this.emit('taskDone', this.current);
+            this.current = null;
+        } else if (this.current.status === 'failed') {
+            this.emit('taskFailed', this.current);
             this.current = null;
         }
 

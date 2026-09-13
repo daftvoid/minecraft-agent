@@ -29,7 +29,7 @@ export const get_item_from_creative: Tool = {
 
         const slotIndex = bot.inventory.firstEmptyInventorySlot(true)
 
-        if (!slotIndex) {
+        if (slotIndex === null) {
             return 'Your inventory is full. Could not get item.'
         }
 

@@ -23,10 +23,18 @@ export const chat: Tool = {
     async execute(args, ctx) {
         const bot = ctx.bot;
 
-        const message = (args as { message: string }).message
+        const { message } = (args as { message: string })
+
+        if (message.length === 0) {
+            return 'message cannot be empty!';
+        }
+
+        if (message.startsWith('/')) {
+            return 'message cannot start with a "/"!'
+        }
 
         bot.chat(message);
 
-        return 'message sent.'
+        return 'message sent successfully.'
     }
 }

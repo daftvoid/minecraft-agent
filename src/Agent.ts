@@ -1,6 +1,11 @@
 import type {AgentContext} from "./AgentContext.ts";
 import {ToolRegistry} from "./tools/ToolRegistry.ts";
-import {IdleObservation, type Observation, TaskDoneObservation} from "./observation/Observation.ts";
+import {
+    IdleObservation,
+    type Observation,
+    TaskDoneObservation,
+    TaskFailedObservation
+} from "./observation/Observation.ts";
 import {PromptBuilder} from "./PromptBuilder.ts";
 import * as console from "node:console";
 
@@ -19,6 +24,10 @@ export class Agent {
     constructor(private ctx: AgentContext) {
         ctx.tasks.on('taskDone', (task) => {
             this.observe(new TaskDoneObservation(task))
+        })
+
+        ctx.tasks.on('taskFailed', (task) => {
+            this.observe(new TaskFailedObservation(task))
         })
     }
 

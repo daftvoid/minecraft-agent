@@ -5,6 +5,7 @@ import {OpenAI} from "openai";
 import {Agent} from "./Agent.ts";
 import {LLM} from "./LLM.ts";
 import {
+    AgentHurtObservation,
     AgentJoinedObservation,
     ChatObservation,
     DayObservation,
@@ -16,6 +17,7 @@ import {
 } from "./observation/Observation.ts";
 import {TaskManager} from "./tasks/TaskManager.ts";
 import minecraftData from "minecraft-data";
+import {Formatter} from "./utils/Formatter.ts";
 
 const client = new OpenAI({
     baseURL: 'http://localhost:11434/v1',
@@ -150,6 +152,12 @@ bot.once('spawn', () => {
         if (!item) return;
 
         agent.observe(new ItemPickupObservation(item))
+    })
+
+    bot.on('entityHurt', (victim, attacker) => {
+        if (victim.username === bot.username) {
+            agent.observe(new AgentHurtObservation(victim, attacker));
+        }
     })
 })
 

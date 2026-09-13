@@ -1,4 +1,5 @@
 import type {Item} from "prismarine-item";
+import type {Entity} from "prismarine-entity";
 
 type NbtByte = { type: "byte"; value: 0 | 1 };
 type NbtString = { type: "string"; value: string };
@@ -75,5 +76,11 @@ export class Formatter {
         }
 
         return componentToHtml(nbt);
+    }
+
+
+
+    static formatEntity(e: Entity) {
+        return `displayname=${e.displayName ?? e.username} name=${e.name} position={${e.position}} id=${e.id}`
     }
 }

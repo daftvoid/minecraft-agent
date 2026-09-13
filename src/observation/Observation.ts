@@ -1,6 +1,8 @@
 import type {AgentContext} from "../AgentContext.ts";
 import type {Item} from "prismarine-item";
 import type {Task} from "../tasks/Task.ts";
+import type {Entity} from "prismarine-entity";
+import {Formatter} from "../utils/Formatter.ts";
 
 export abstract class Observation {
     abstract priority: number;
@@ -233,5 +235,45 @@ export class TaskFailedObservation extends Observation {
 
     toPrompt(): string {
         return `%system% Task "${this.task.constructor.name}" FAILED!`;
+    }
+}
+
+
+
+export class AgentHurtObservation extends Observation {
+    get priority(): number {
+        return 3 + this.hits ** 2 + (20 - (this.bot.health ?? 20)) ** 0.9;
+    }
+
+    shouldWake: boolean = false;
+
+    private hits = 1;
+    private attackers: Entity[] = [];
+
+    constructor(private bot:Entity, attacker: Entity) {
+        super();
+        this.attackers.push(attacker);
+    }
+
+    toPrompt(): string {
+        const unique = [...new Map(this.attackers.map(e => [e.id, e])).values()];
+
+        return `%system% You have been hurt! Current HP: ${this.bot.health}. \nAttackers:\n${unique.map(Formatter.formatEntity).join('\n')}`;
+    }
+
+    override toMessages(): any[] {
+        return [{
+            role: 'user',
+            content: this.toPrompt(),
+        }]
+    }
+
+    override merge(other: Observation): boolean {
+        if (!(other instanceof AgentHurtObservation)) {return false;}
+
+        this.hits += other.hits;
+        this.attackers.push(...other.attackers.filter(a => a !== undefined));
+
+        return true;
     }
 }

@@ -18,7 +18,9 @@ export class Agent {
     private thinking = false;
 
     get pressure(): number {
-        return this.idlePressure + this.observations.map(o => o.priority).reduce((a, b) => a + b, 0);
+        return this.idlePressure
+            + this.observations.map(o => o.priority).reduce((a, b) => a + b, 0)
+            + (!!this.ctx.goalState.activeGoal ? 5 : 0);
     }
 
     constructor(private ctx: AgentContext) {

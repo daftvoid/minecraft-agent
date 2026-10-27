@@ -6,7 +6,9 @@ export const complete_goal: Tool = {
         type: "function",
         function: {
             name: "complete_goal",
-            description: "Mark the entire current goal as finished, clearing it as your active goal. Use this once all its steps are done (or the goal is otherwise satisfied) so you can move on to something else, such as pulling a new goal from your backlog.",
+            description: "Mark the entire current goal as finished, clearing it as your active goal. " +
+                "Use this once all its steps are done (or the goal is otherwise satisfied) so you can move on to something else, such as pulling a new goal from your backlog. " +
+                "Before using this tool, check that the goal is actually satisfied in world state.",
             parameters: {
                 type: "object",
                 properties: {

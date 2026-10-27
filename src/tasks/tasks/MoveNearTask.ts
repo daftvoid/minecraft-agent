@@ -9,7 +9,7 @@ export class MoveNearTask extends Task {
     private stuckPos: Vec3 | null = null;
     private stuckTicks = 0;
 
-    private failedReason: 'generic' | 'stuck' = 'generic';
+    private failedReason: 'generic' | 'stuck' | 'no_path' = 'generic';
 
     constructor(
         ctx: AgentContext,
@@ -37,7 +37,10 @@ export class MoveNearTask extends Task {
 
         ctx.bot.on('path_update', (results: any) => {
             if (this.status !== 'running') return;
-            if (results.status === 'noPath') this.status = 'failed';
+            if (results.status === 'noPath') {
+                this.failedReason = 'no_path';
+                this.status = 'failed';
+            }
         });
     }
 
@@ -55,7 +58,9 @@ export class MoveNearTask extends Task {
 
         if (this.failedReason === 'stuck') {
             return `You got stuck at {X :${pos.x}, Y: ${pos.y}, Z: ${pos.z}}.`
-        } else {
+        } else if (this.failedReason === 'no_path') {
+            return `No path found to {X: ${this.x}, Y: ${this.y}, Z: ${this.z}}`
+        } {
             return 'MoveNearTask failed because of a generic reason.'
         }
     }

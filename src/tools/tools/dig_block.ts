@@ -49,8 +49,14 @@ export const dig_block: Tool = {
         bot.pathfinder.setMovements(defaultMove)
         bot.pathfinder.setGoal(new goals.GoalNear(x, y, z, 3))
 
+        const digTime = bot.digTime(block);
+
+        if (digTime === Infinity) {
+            return `Digtime for ${block.name}) at {X: ${x}, Y: ${y}, Z: ${z}} is Infinity`;
+        }
+
         await bot.dig(block)
 
-        return `Mined block (${block.name}) at X: ${x}, Y: ${y}, Z: ${z}`
+        return `Mined block (${block.name}) at X: ${x}, Y: ${y}, Z: ${z} in ${digTime}ms`
     }
 }

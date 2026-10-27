@@ -52,8 +52,12 @@ export class KillEntityTask extends Task {
         return 'Entity killed or out of range.';
     }
 
+    get failedMessage(): string {
+        return 'Entity might be dead or out of range.';
+    }
+
     async tick(): Promise<void> {
-        if (this.status === 'done') return;
+        if (this.status !== 'running') return;
 
         const entity = this.entity;
 

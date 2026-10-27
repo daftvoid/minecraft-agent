@@ -1,10 +1,11 @@
-import type {Task} from "./Task.ts";
+import type {Task, TaskStatus} from "./Task.ts";
 import EventEmitter from "events";
 import type TypedEventEmitter from "typed-emitter";
 
 type TaskManagerEvents = {
     taskDone: (task: Task) => void;
     taskFailed: (task: Task) => void;
+    taskStopped: (task: Task) => void;
 }
 
 export class TaskManager extends (EventEmitter as new () => TypedEventEmitter<TaskManagerEvents>) {
@@ -28,6 +29,7 @@ export class TaskManager extends (EventEmitter as new () => TypedEventEmitter<Ta
             }
 
             this.current = this.taskQueue.shift()!;
+            this.current.status = 'running';
         }
 
         // tick
@@ -44,6 +46,9 @@ export class TaskManager extends (EventEmitter as new () => TypedEventEmitter<Ta
             this.current = null;
         } else if (this.current.status === 'failed') {
             this.emit('taskFailed', this.current);
+            this.current = null;
+        } else if (this.current.status === 'stopped') {
+            this.emit('taskStopped', this.current);
             this.current = null;
         }
 
@@ -69,9 +74,9 @@ export class TaskManager extends (EventEmitter as new () => TypedEventEmitter<Ta
         this.clean()
     }
 
-    removeCurrent() {
+    removeCurrent(status: TaskStatus) {
         if (this.current) {
-            this.current.status = 'failed';
+            this.current.status = status;
         }
     }
 

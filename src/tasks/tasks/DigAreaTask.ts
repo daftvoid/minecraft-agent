@@ -28,8 +28,12 @@ export class DigAreaTask extends Task {
         return 'Area dug successfully';
     }
 
+    get failedMessage(): string {
+        return 'Task failed for generic reason.'
+    }
+
     async tick(): Promise<void> {
-        if (this.status === 'done') return;
+        if (this.status !== 'running') return;
 
         const next = this.iterator.next();
 

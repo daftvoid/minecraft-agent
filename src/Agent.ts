@@ -4,7 +4,7 @@ import {
     IdleObservation,
     type Observation,
     TaskDoneObservation,
-    TaskFailedObservation
+    TaskFailedObservation, TaskStoppedObservation
 } from "./observation/Observation.ts";
 import {PromptBuilder} from "./PromptBuilder.ts";
 import * as console from "node:console";
@@ -30,6 +30,10 @@ export class Agent {
 
         ctx.tasks.on('taskFailed', (task) => {
             this.observe(new TaskFailedObservation(task))
+        })
+
+        ctx.tasks.on('taskStopped', (task) => {
+            this.observe(new TaskStoppedObservation(task))
         })
     }
 

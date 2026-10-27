@@ -10,7 +10,7 @@ export const stop_task: Tool = {
     },
 
     async execute(args, ctx) {
-        ctx.tasks.removeCurrent()
+        ctx.tasks.removeCurrent('stopped')
 
         return 'Stopped current task.';
     }

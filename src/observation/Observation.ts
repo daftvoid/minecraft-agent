@@ -234,9 +234,33 @@ export class TaskFailedObservation extends Observation {
     }
 
     toPrompt(): string {
-        return `%system% Task "${this.task.constructor.name}" FAILED!`;
+        console.log(`%system% Task "${this.task.constructor.name}" failed!\nMessage from task: ${this.task.failedMessage}}`)
+        return `%system% Task "${this.task.constructor.name}" failed!\nMessage from task: ${this.task.failedMessage}}`;
     }
 }
+
+
+
+export class TaskStoppedObservation extends Observation {
+    priority: number = 20;
+    shouldWake: boolean = true;
+
+    constructor(private task: Task) {
+        super();
+    }
+
+    override toMessages(): any[] {
+        return [{
+            role: 'user',
+            content: this.toPrompt(),
+        }]
+    }
+
+    toPrompt(): string {
+        return `%system% Task "${this.task.constructor.name}" stopped!`;
+    }
+}
+
 
 
 

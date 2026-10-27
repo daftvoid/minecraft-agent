@@ -6,7 +6,7 @@ type TaskEvents = {
     statusChange: (old: TaskStatus, current: TaskStatus) => void
 }
 
-export type TaskStatus = 'pending' | 'running' | 'paused' |  'done' | 'failed'
+export type TaskStatus = 'pending' | 'running' | 'paused' |  'done' | 'failed' | 'stopped'
 
 export abstract class Task extends (EventEmitter as new () => TypedEventEmitter<TaskEvents>) {
     private _status: TaskStatus = 'pending';
@@ -35,4 +35,6 @@ export abstract class Task extends (EventEmitter as new () => TypedEventEmitter<
     abstract get description(): string
 
     abstract get doneMessage(): string
+
+    abstract get failedMessage(): string
 }

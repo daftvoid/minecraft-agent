@@ -1,0 +1,96 @@
+import {Task} from "../Task.ts";
+import type {AgentContext} from "../../AgentContext.ts";
+import {goals, Movements} from "mineflayer-pathfinder";
+import {Vec3} from "vec3";
+
+export class MoveNearTask extends Task {
+    private started = false;
+    private target = new Vec3(0, 0, 0); // set in constructor from x,y,z
+    private stuckPos: Vec3 | null = null;
+    private stuckTicks = 0;
+
+    private failedReason: 'generic' | 'stuck' = 'generic';
+
+    constructor(
+        ctx: AgentContext,
+        private x: number,
+        private y: number,
+        private z: number,
+        private range?: number
+    ) {
+        super(ctx);
+        this.target = new Vec3(x, y, z);
+
+        this.on("statusChange", (_, status) => {
+            if (status === 'stopped') {
+                this.ctx.bot.pathfinder.setGoal(null);
+            }
+        })
+
+        ctx.bot.once('goal_reached', () => {
+            console.log("goal_reached");
+            console.log(this.status)
+
+            if (this.status !== 'running') return;
+            this.status = 'done';
+        })
+
+        ctx.bot.on('path_update', (results: any) => {
+            if (this.status !== 'running') return;
+            if (results.status === 'noPath') this.status = 'failed';
+        });
+    }
+
+    get description(): string {
+        return `Moving towards X: ${this.x}, Y: ${this.y}, Z: ${this.z}`;
+    }
+
+    get doneMessage(): string {
+        return `Reached destination - X: ${this.x}, Y: ${this.y}, Z: ${this.z}`;
+    }
+
+
+    get failedMessage(): string {
+        const pos = this.ctx.bot.entity.position;
+
+        if (this.failedReason === 'stuck') {
+            return `You got stuck at {X :${pos.x}, Y: ${pos.y}, Z: ${pos.z}}.`
+        } else {
+            return 'MoveNearTask failed because of a generic reason.'
+        }
+    }
+
+    async tick(): Promise<void> {
+        if (this.status !== 'running') return;
+
+        if (!this.started) {
+            this.started = true;
+
+            // already there check
+            if (this.ctx.bot.entity.position.distanceTo(this.target) <= (this.range ?? 0)) {
+                this.status = 'done';
+                return;
+            }
+
+            const movements = new Movements(this.ctx.bot);
+            this.ctx.bot.pathfinder.setMovements(movements);
+            this.ctx.bot.pathfinder.setGoal(new goals.GoalNear(this.x, this.y, this.z, this.range ?? 1));
+            return;
+        }
+
+
+
+        // stuck / unreachable detection
+        const pos = this.ctx.bot.entity.position;
+        if (this.stuckPos && pos.distanceTo(this.stuckPos) < 0.1) {
+            this.stuckTicks++;
+            if (this.stuckTicks > 100) {
+                console.log("task failed, stuck!")
+                this.status = 'failed';
+            }
+        } else {
+            this.stuckTicks = 0;
+            this.stuckPos = pos.clone();
+        }
+    }
+}

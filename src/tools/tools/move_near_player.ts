@@ -1,5 +1,4 @@
 import type {Tool} from "../Tool.ts";
-import {get_player_position} from "./get_player_position.ts";
 import {move_near} from "./move_near.ts";
 
 export const move_near_player: Tool = {
@@ -9,7 +8,7 @@ export const move_near_player: Tool = {
             name: 'move_near_player',
             description: `
             Moves near a player. Use this instead of calling \`get_player_position\` and \`move_near\` separately.
-            `,
+            Starts a MoveNearTask.`,
             parameters: {
                 type: 'object',
                 properties: {

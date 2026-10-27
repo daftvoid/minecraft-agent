@@ -1,5 +1,7 @@
 import type {Tool} from "../Tool.ts";
 import {Movements, goals} from "mineflayer-pathfinder";
+import {MoveNearTask} from "../../tasks/tasks/MoveNearTask.ts";
+import {Vec3} from "vec3";
 
 export const move_near: Tool = {
     schema: {
@@ -9,7 +11,7 @@ export const move_near: Tool = {
             description: `
             Moves the agent near a position. Automatically pathfinds there. 
             A response by this tool means the moving has been initiated, it does not mean that you've reached your goal. 
-            `,
+            Starts a MoveNearTask.`,
             parameters: {
                 type: 'object',
                 properties: {
@@ -36,25 +38,10 @@ export const move_near: Tool = {
     },
 
     async execute(args, ctx) {
-        const bot = ctx.bot;
+        const { x, y, z, range } = args as { x: number, y: number, z: number, range?: number }
 
-        const defaultMove = new Movements(bot)
+        ctx.tasks.add(new MoveNearTask(ctx, x, y, z, range ?? 1))
 
-        const { x, y, z, range } = args as any
-
-        bot.pathfinder.setMovements(defaultMove)
-        bot.pathfinder.setGoal(new goals.GoalNear(x, y, z, range ?? 1))
-
-        const pos = bot.entity.position.clone()
-
-        const distance = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2) + Math.pow(z - pos.z, 2))
-
-        return `Status: Moving
-
-Target X: ${x}
-Target Y: ${y}
-Target Z: ${z}
-
-Moving Distance: ${distance.toFixed(2)}`;
-    }
-}
+        const dist = ctx.bot.entity.position.distanceTo(new Vec3(x, y, z));
+        return `Started MoveNearTask towards X: ${x}, Y: ${y}, Z: ${z} (distance ${dist.toFixed(1)}). A system observation will tell you when you have arrived.`;
+    }}

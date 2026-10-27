@@ -38,6 +38,8 @@ export class Agent {
     }
 
     observe(observation: Observation) {
+        console.log('[obs]', observation.constructor.name, observation.toPrompt())
+
         const mergedInto = this.observations.find(o => o.merge(observation))
 
         if (!mergedInto) {

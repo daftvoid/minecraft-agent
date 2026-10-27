@@ -139,7 +139,7 @@ export class IdleObservation extends Observation {
     shouldWake = false;
 
     toPrompt() {
-        return "(No new events. This is a routine check-in - only act or speak if there is something worth doing.)";
+        return "You are idle. No new events occurred. Check if any goals have pending steps. Continue working, or explicitly change a goal.";
     }
 }
 
@@ -280,7 +280,7 @@ export class AgentHurtObservation extends Observation {
     }
 
     toPrompt(): string {
-        const unique = [...new Map(this.attackers.map(e => [e.id, e])).values()];
+        const unique = [...new Map(this.attackers.filter(e => e !== undefined).map(e => [e.id, e])).values()];
 
         return `%system% You have been hurt! Current HP: ${this.bot.health}. \nAttackers:\n${unique.map(Formatter.formatEntity).join('\n')}`;
     }

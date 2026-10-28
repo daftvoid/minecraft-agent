@@ -51,11 +51,11 @@ export class MoveNearTask extends Task {
     }
 
     get description(): string {
-        return `Moving towards X: ${this.x}, Y: ${this.y}, Z: ${this.z}`;
+        return `Moving towards X: ${this.x.toFixed(1)}, Y: ${this.y.toFixed(1)}, Z: ${this.z.toFixed(1)}`;
     }
 
     get doneMessage(): string {
-        return `Reached destination - X: ${this.x}, Y: ${this.y}, Z: ${this.z}`;
+        return `Reached destination - X: ${this.x.toFixed(1)}, Y: ${this.y.toFixed(1)}, Z: ${this.z.toFixed(1)}`;
     }
 
 
@@ -63,9 +63,9 @@ export class MoveNearTask extends Task {
         const pos = this.ctx.bot.entity.position;
 
         if (this.failedReason === 'stuck') {
-            return `You got stuck at {X :${pos.x}, Y: ${pos.y}, Z: ${pos.z}}.`
+            return `You got stuck at {X :${pos.x.toFixed(1)}, Y: ${pos.y.toFixed(1)}, Z: ${pos.z.toFixed(1)}}.`
         } else if (this.failedReason === 'no_path') {
-            return `No path found to {X: ${this.x}, Y: ${this.y}, Z: ${this.z}}`
+            return `No path found to {X: ${this.x.toFixed(1)}, Y: ${this.y.toFixed(1)}, Z: ${this.z.toFixed(1)}}`
         } {
             return 'MoveNearTask failed because of a generic reason.'
         }

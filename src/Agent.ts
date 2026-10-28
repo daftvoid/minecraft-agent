@@ -20,7 +20,7 @@ export class Agent {
     get pressure(): number {
         return this.idlePressure
             + this.observations.map(o => o.priority).reduce((a, b) => a + b, 0)
-            + (!!this.ctx.goalState.activeGoal ? 5 : 0);
+            + (!!this.ctx.goalState.activeGoal ? 12 : 0);
     }
 
     constructor(private ctx: AgentContext) {
@@ -128,15 +128,25 @@ export class Agent {
             msgs.push(aimsg)
 
             for (const toolcall of tool_calls.filter(t => t.type === 'function')) {
-                const res = await ToolRegistry.execute(toolcall, this.ctx)
+                try {
+                    const res = await ToolRegistry.execute(toolcall, this.ctx)
 
-                console.info(`> Tool called: "${toolcall.function.name}", Params: ${toolcall.function.arguments}, Result: ${JSON.stringify(res)}`)
+                    console.info(`> Tool called: "${toolcall.function.name}", Params: ${toolcall.function.arguments}, Result: ${JSON.stringify(res)}`)
 
-                msgs.push({
-                    role: 'tool',
-                    content: res,
-                    tool_call_id: toolcall.id
-                })
+                    msgs.push({
+                        role: 'tool',
+                        content: res,
+                        tool_call_id: toolcall.id
+                    })
+                } catch (e) {
+                    console.info(`> INVALID Tool called: "${toolcall.function.name}", Params: ${toolcall.function.arguments}, Result: ${JSON.stringify(res)}`)
+
+                    msgs.push({
+                        role: 'tool',
+                        content: e,
+                        tool_call_id: toolcall.id
+                    })
+                }
             }
 
             if (tool_calls.length === 0) {

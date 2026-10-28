@@ -26,6 +26,7 @@ import {find_containers} from "./tools/find_containers.ts";
 import {find_entities} from "./tools/find_entities.ts";
 import {kill_entity} from "./tools/kill_entity.ts";
 import {place_block} from "./tools/place_block.ts";
+import {select_item} from "./tools/select_item.ts";
 
 interface ToolCall {
     id: string;
@@ -78,7 +79,9 @@ export class ToolRegistry {
         place_block,
 
         // stop task
-        stop_task
+        stop_task,
+
+        select_item
     ];
 
     static get schemas() {

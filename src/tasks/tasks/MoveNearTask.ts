@@ -35,13 +35,19 @@ export class MoveNearTask extends Task {
             this.status = 'done';
         })
 
-        ctx.bot.on('path_update', (results: any) => {
-            if (this.status !== 'running') return;
+        const pathUpdate = (results: any) => {
+            if (this.status !== 'running') {
+                ctx.bot.off('path_update', pathUpdate);
+                return;
+            }
+
             if (results.status === 'noPath') {
                 this.failedReason = 'no_path';
                 this.status = 'failed';
             }
-        });
+        }
+
+        ctx.bot.on('path_update', pathUpdate);
     }
 
     get description(): string {

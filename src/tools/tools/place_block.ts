@@ -118,12 +118,38 @@ export const place_block: Tool = {
 			await bot.pathfinder.goto(
 				new goals.GoalNear(target.x, target.y, target.z, 4),
 			);
-		} catch {
-			const dist = bot.entity.position.distanceTo(target as Vec3);
+		}  catch (err) {
+			return `Could not reach a valid position to place at X: ${target.x}, Y: ${target.y}, Z: ${target.z}: ${(err as Error).message}`;
+		}
 
-			if (dist > 4.5) {
-				return `Target is too far away (${dist.toFixed(1)} blocks) and unreachable.`;
+
+		const feet = bot.entity.position.floored();
+		if (feet.equals(target) || feet.offset(0, 1, 0).equals(target)) {
+			await bot.pathfinder.goto(
+				new goals.GoalInvert(new goals.GoalBlock(target.x, target.y, target.z)),
+			);
+		}
+
+		// special fluid handling
+		if (normalized === 'water_bucket' || normalized === 'lava_bucket') {
+			try {
+				// Center of the face we want the raycast to hit
+				const faceCenter = referenceBlock.position
+					.offset(0.5, 0.5, 0.5)
+					.plus(faceVector.scaled(0.5));
+
+				if (!bot.canSeeBlock(referenceBlock)) {
+					throw new Error("Bot cannot see the block. It might be behind a wall.")
+				}
+
+				await bot.lookAt(faceCenter, true);
+				await bot.waitForTicks(2);
+				bot.activateItem();
+			} catch (err) {
+				return `Failed to place ${normalized} at X: ${target.x}, Y: ${target.y}, Z: ${target.z}: ${(err as Error).message}`;
 			}
+
+			return `Placed ${normalized} at X: ${target.x}, Y: ${target.y}, Z: ${target.z}`;
 		}
 
 		try {

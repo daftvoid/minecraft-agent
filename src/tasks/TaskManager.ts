@@ -1,89 +1,89 @@
-import type {Task, TaskStatus} from "./Task.ts";
-import EventEmitter from "events";
-import type TypedEventEmitter from "typed-emitter";
+import type { Task, TaskStatus } from './Task.ts';
+import EventEmitter from 'events';
+import type TypedEventEmitter from 'typed-emitter';
 
 type TaskManagerEvents = {
-    taskDone: (task: Task) => void;
-    taskFailed: (task: Task) => void;
-    taskStopped: (task: Task) => void;
-}
+	taskDone: (task: Task) => void;
+	taskFailed: (task: Task) => void;
+	taskStopped: (task: Task) => void;
+};
 
 export class TaskManager extends (EventEmitter as new () => TypedEventEmitter<TaskManagerEvents>) {
-    current: Task | null = null;
-    private _busy: boolean = false;
+	current: Task | null = null;
+	private _busy: boolean = false;
 
-    taskQueue: Task[] = []
+	taskQueue: Task[] = [];
 
-    get busy(): boolean {
-        return this._busy;
-    }
+	get busy(): boolean {
+		return this._busy;
+	}
 
-    async tick() {
-        this._busy = true;
+	async tick() {
+		this._busy = true;
 
-        // add new task from queue
-        if (this.current === null) {
-            if (this.taskQueue.length === 0) {
-                this._busy = false;
-                return;
-            }
+		// add new task from queue
+		if (this.current === null) {
+			if (this.taskQueue.length === 0) {
+				this._busy = false;
+				return;
+			}
 
-            this.current = this.taskQueue.shift()!;
-            this.current.status = 'running';
-        }
+			this.current = this.taskQueue.shift()!;
+			this.current.status = 'running';
+		}
 
-        // tick
-        try {
-            await this.current.tick()
-        } catch (error) {
-            console.error(error);
-            this.current.status = 'failed'
-        }
+		// tick
+		try {
+			await this.current.tick();
+		} catch (error) {
+			console.error(error);
+			this.current.status = 'failed';
+		}
 
-        // task done or failed w/ eventemitter
-        if (this.current.status === 'done') {
-            this.emit('taskDone', this.current);
-            this.current = null;
-        } else if (this.current.status === 'failed') {
-            this.emit('taskFailed', this.current);
-            this.current = null;
-        } else if (this.current.status === 'stopped') {
-            this.emit('taskStopped', this.current);
-            this.current = null;
-        }
+		// task done or failed w/ eventemitter
+		if (this.current.status === 'done') {
+			this.emit('taskDone', this.current);
+			this.current = null;
+		} else if (this.current.status === 'failed') {
+			this.emit('taskFailed', this.current);
+			this.current = null;
+		} else if (this.current.status === 'stopped') {
+			this.emit('taskStopped', this.current);
+			this.current = null;
+		}
 
-        this._busy = false;
-    }
+		this._busy = false;
+	}
 
-    set(task: Task) {
-        if (this.current) {
-            this.current.status = 'paused';
-            this.taskQueue.unshift(this.current);
-        }
+	set(task: Task) {
+		if (this.current) {
+			this.current.status = 'paused';
+			this.taskQueue.unshift(this.current);
+		}
 
-        task.status = 'running';
-        this.current = task;
+		task.status = 'running';
+		this.current = task;
 
-        this.clean()
-    }
+		this.clean();
+	}
 
-    add(task: Task) {
-        task.status = 'pending';
-        this.taskQueue.push(task);
+	add(task: Task) {
+		task.status = 'pending';
+		this.taskQueue.push(task);
 
-        this.clean()
-    }
+		this.clean();
+	}
 
-    removeCurrent(status: TaskStatus) {
-        if (this.current) {
-            this.current.status = status;
-        }
-    }
+	removeCurrent(status: TaskStatus) {
+		if (this.current) {
+			this.current.status = status;
+		}
+	}
 
-    protected clean() {
-        this.taskQueue = this.taskQueue
-            .filter((task) => task !== this.current)   // removes current task from taskQueue
-            .filter((task) => task.status !== 'done') // removes done tasks
-            .filter((task) => task.status !== 'running');
-    }
+	protected clean() {
+		this.taskQueue = this.taskQueue
+			.filter((task) => task !== this.current) // removes current task from taskQueue
+			.filter((task) => task.status !== 'done') // removes done tasks
+			.filter((task) => task.status !== 'running');
+	}
 }

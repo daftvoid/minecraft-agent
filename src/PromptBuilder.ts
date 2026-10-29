@@ -1,31 +1,33 @@
-import type {AgentContext} from "./AgentContext.ts";
-import {ToolRegistry} from "./tools/ToolRegistry.ts";
+import type { AgentContext } from './AgentContext.ts';
+import { ToolRegistry } from './tools/ToolRegistry.ts';
 
 export class PromptBuilder {
-    static build(ctx: AgentContext) {
-        const timeContext = `
+	static build(ctx: AgentContext) {
+		const timeContext = `
 It's currently ${ctx.bot.time.isDay ? 'daytime' : 'nighttime'}
 It's the ${ctx.bot.time.day} day of this minecraft world.`;
 
-        const gameContext = `
+		const gameContext = `
 You are in gamemode: ${ctx.bot.game.gameMode}, playing on difficulty: ${ctx.bot.game.hardcore ? 'hardcore' : ctx.bot.game.difficulty}
-You are in dimension: ${ctx.bot.game.dimension} on a ${ctx.bot.game.serverBrand} server.`
+You are in dimension: ${ctx.bot.game.dimension} on a ${ctx.bot.game.serverBrand} server.`;
 
-        const goalContext = ctx.goalState.activeGoal === null ? 'You currently have no goal.' : `
+		const goalContext =
+			ctx.goalState.activeGoal === null
+				? 'You currently have no goal.'
+				: `
 Goal: \"${ctx.goalState.activeGoal}\"
 
 Steps:
-${ctx.goalState.activeSteps.map(s => `- ${s.id}: ${s.desc} - [${s.status}]`).join('\n')}
-`
+${ctx.goalState.activeSteps.map((s) => `- ${s.id}: ${s.desc} - [${s.status}]`).join('\n')}
+`;
 
-        const taskContext = ctx.tasks.current
-            ? `Your current task is "${ctx.tasks.current.description}" with status ${ctx.tasks.current.status}`
-            : 'You currently have no task.'
+		const taskContext = ctx.tasks.current
+			? `Your current task is "${ctx.tasks.current.description}" with status ${ctx.tasks.current.status}`
+			: 'You currently have no task.';
 
-        return {
-            role: 'system',
-            content:
-`# System Prompt
+		return {
+			role: 'system',
+			content: `# System Prompt
             
 You are the Minecraft Agent named "${ctx.bot.username}"
 You are NOT the player.
@@ -90,6 +92,6 @@ ${timeContext}
 
 ${gameContext}
 `,
-        }
-    }
+		};
+	}
 }

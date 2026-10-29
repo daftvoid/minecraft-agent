@@ -1,303 +1,318 @@
-import type {AgentContext} from "../AgentContext.ts";
-import type {Item} from "prismarine-item";
-import type {Task} from "../tasks/Task.ts";
-import type {Entity} from "prismarine-entity";
-import {Formatter} from "../utils/Formatter.ts";
+import type { AgentContext } from '../AgentContext.ts';
+import type { Item } from 'prismarine-item';
+import type { Task } from '../tasks/Task.ts';
+import type { Entity } from 'prismarine-entity';
+import { Formatter } from '../utils/Formatter.ts';
 
 export abstract class Observation {
-    abstract priority: number;
-    abstract shouldWake: boolean;
+	abstract priority: number;
+	abstract shouldWake: boolean;
 
-    abstract toPrompt(): string;
+	abstract toPrompt(): string;
 
-    toMessages(): any[] {
-        return [{
-            role: 'system',
-            content: this.toPrompt(),
-        }]
-    }
+	toMessages(): any[] {
+		return [
+			{
+				role: 'system',
+				content: this.toPrompt(),
+			},
+		];
+	}
 
-    /**
-     * Return true if this observation absorbed `other` into itself.
-     *
-     * Default: no merging.
-     * @param other Observation to be absorbed
-     */
-    merge(other: Observation): boolean {
-        return false;
-    }
+	/**
+	 * Return true if this observation absorbed `other` into itself.
+	 *
+	 * Default: no merging.
+	 * @param other Observation to be absorbed
+	 */
+	merge(other: Observation): boolean {
+		return false;
+	}
 }
-
 
 export class ChatObservation extends Observation {
-    priority = 15;
-    shouldWake = true;
+	priority = 15;
+	shouldWake = true;
 
-    constructor(
-        public player: string,
-        public message: string
-    ) {
-        super();
-    }
+	constructor(
+		public player: string,
+		public message: string,
+	) {
+		super();
+	}
 
-    toPrompt() {
-        return `${this.player} said: "${this.message}"`;
-    }
+	toPrompt() {
+		return `${this.player} said: "${this.message}"`;
+	}
 
-    override toMessages(): any[] {
-        return [{
-            role: 'user',
-            content: this.toPrompt(),
-        }]
-    }
+	override toMessages(): any[] {
+		return [
+			{
+				role: 'user',
+				content: this.toPrompt(),
+			},
+		];
+	}
 }
-
 
 export class PlayerJoinedObservation extends Observation {
-    priority = 10;
-    shouldWake = true;
+	priority = 10;
+	shouldWake = true;
 
-    constructor(public player: string) {
-        super();
-    }
+	constructor(public player: string) {
+		super();
+	}
 
-    toPrompt() {
-        return `${this.player} joined the game.`;
-    }
+	toPrompt() {
+		return `${this.player} joined the game.`;
+	}
 }
-
 
 export class PlayerLeftObservation extends Observation {
-    priority = 5;
-    shouldWake = false;
+	priority = 5;
+	shouldWake = false;
 
-    constructor(public player: string) {
-        super();
-    }
+	constructor(public player: string) {
+		super();
+	}
 
-    toPrompt() {
-        return `${this.player} left the game.`;
-    }
+	toPrompt() {
+		return `${this.player} left the game.`;
+	}
 }
-
 
 export class NightObservation extends Observation {
-    priority = 10;
-    shouldWake = false;
+	priority = 10;
+	shouldWake = false;
 
-    toPrompt() {
-        return 'It has become night.';
-    }
+	toPrompt() {
+		return 'It has become night.';
+	}
 }
-
 
 export class DayObservation extends Observation {
-    priority = 10;
-    shouldWake = false;
+	priority = 10;
+	shouldWake = false;
 
-    toPrompt() {
-        return 'It has become day.';
-    }
+	toPrompt() {
+		return 'It has become day.';
+	}
 }
-
 
 export class DeathObservation extends Observation {
-    priority = 20;
-    shouldWake = true;
+	priority = 20;
+	shouldWake = true;
 
+	constructor(private deathmsg: string) {
+		super();
+	}
 
-    constructor(private deathmsg: string) {
-        super();
-    }
+	toPrompt() {
+		return `%system% Someone died! Death Message: \"${this.deathmsg}\".`;
+	}
 
-    toPrompt() {
-        return `%system% Someone died! Death Message: \"${this.deathmsg}\".`;
-    }
-
-    override toMessages(): any[] {
-        return [{
-            role: 'user',
-            content: this.toPrompt(),
-        }]
-    }
-
+	override toMessages(): any[] {
+		return [
+			{
+				role: 'user',
+				content: this.toPrompt(),
+			},
+		];
+	}
 }
-
 
 export class AgentJoinedObservation extends Observation {
-    priority = 20;
-    shouldWake = true;
+	priority = 20;
+	shouldWake = true;
 
-    toPrompt() {
-        return 'You just joined the game.';
-    }
+	toPrompt() {
+		return 'You just joined the game.';
+	}
 }
-
 
 export class IdleObservation extends Observation {
-    priority = 0;
-    shouldWake = false;
+	priority = 0;
+	shouldWake = false;
 
-    toPrompt() {
-        return "You are idle. No new events occurred. Check if any goals have pending steps. Continue working, or explicitly change a goal.";
-    }
+	toPrompt() {
+		return 'You are idle. No new events occurred. Check if any goals have pending steps. Continue working, or explicitly change a goal.';
+	}
 }
-
 
 export class ItemPickupObservation extends Observation {
-    get priority(): number {
-        return 1 + this.items.length ** 0.5
-    }
+	get priority(): number {
+		return 1 + this.items.length ** 0.5;
+	}
 
-    shouldWake: boolean = false;
+	shouldWake: boolean = false;
 
-    private items: Item[] = []
+	private items: Item[] = [];
 
-    constructor(item: Item) {
-        super();
+	constructor(item: Item) {
+		super();
 
-        this.items.push(item)
-    }
+		this.items.push(item);
+	}
 
-    toPrompt(): string {
-        const names_counts = new Map<string, number>()
+	toPrompt(): string {
+		const names_counts = new Map<string, number>();
 
-        for (const item of this.items) {
-            const name = item.name
+		for (const item of this.items) {
+			const name = item.name;
 
-            names_counts.set(name, (names_counts.getOrInsert(name, 0) + item.count))
-        }
+			names_counts.set(name, names_counts.getOrInsert(name, 0) + item.count);
+		}
 
-        const prompt = '%system% A few items have been picked up:\n' +
-            names_counts
-                .entries()
-                .map(([i, c]) => `- ${c}x ${i}`)
-                .toArray()
-                .join('\n');
+		const prompt =
+			'%system% A few items have been picked up:\n' +
+			names_counts
+				.entries()
+				.map(([i, c]) => `- ${c}x ${i}`)
+				.toArray()
+				.join('\n');
 
-        console.log(prompt);
+		console.log(prompt);
 
-        return prompt;
-    }
+		return prompt;
+	}
 
-    override toMessages(): any[] {
-        return [{
-            role: 'user',
-            content: this.toPrompt(),
-        }]
-    }
+	override toMessages(): any[] {
+		return [
+			{
+				role: 'user',
+				content: this.toPrompt(),
+			},
+		];
+	}
 
-    override merge(other: Observation): boolean {
-        if (!(other instanceof ItemPickupObservation)) {return false;}
+	override merge(other: Observation): boolean {
+		if (!(other instanceof ItemPickupObservation)) {
+			return false;
+		}
 
-        this.items.push(...other.items)
+		this.items.push(...other.items);
 
-        return true;
-    }
+		return true;
+	}
 }
-
 
 export class TaskDoneObservation extends Observation {
-    priority: number = 20;
-    shouldWake: boolean = true;
+	priority: number = 20;
+	shouldWake: boolean = true;
 
-    constructor(private task: Task) {
-        super();
-    }
+	constructor(private task: Task) {
+		super();
+	}
 
-    override toMessages(): any[] {
-        return [{
-            role: 'user',
-            content: this.toPrompt(),
-        }]
-    }
+	override toMessages(): any[] {
+		return [
+			{
+				role: 'user',
+				content: this.toPrompt(),
+			},
+		];
+	}
 
-    toPrompt(): string {
-        return `%system% Task "${this.task.constructor.name}" done: ` + this.task.doneMessage;
-    }
+	toPrompt(): string {
+		return (
+			`%system% Task "${this.task.constructor.name}" done: ` +
+			this.task.doneMessage
+		);
+	}
 }
-
 
 export class TaskFailedObservation extends Observation {
-    priority: number = 20;
-    shouldWake: boolean = true;
+	priority: number = 20;
+	shouldWake: boolean = true;
 
-    constructor(private task: Task) {
-        super();
-    }
+	constructor(private task: Task) {
+		super();
+	}
 
-    override toMessages(): any[] {
-        return [{
-            role: 'user',
-            content: this.toPrompt(),
-        }]
-    }
+	override toMessages(): any[] {
+		return [
+			{
+				role: 'user',
+				content: this.toPrompt(),
+			},
+		];
+	}
 
-    toPrompt(): string {
-        console.log(`%system% Task "${this.task.constructor.name}" failed!\nMessage from task: ${this.task.failedMessage}}`)
-        return `%system% Task "${this.task.constructor.name}" failed!\nMessage from task: ${this.task.failedMessage}}`;
-    }
+	toPrompt(): string {
+		console.log(
+			`%system% Task "${this.task.constructor.name}" failed!\nMessage from task: ${this.task.failedMessage}}`,
+		);
+		return `%system% Task "${this.task.constructor.name}" failed!\nMessage from task: ${this.task.failedMessage}}`;
+	}
 }
-
-
 
 export class TaskStoppedObservation extends Observation {
-    priority: number = 20;
-    shouldWake: boolean = true;
+	priority: number = 20;
+	shouldWake: boolean = true;
 
-    constructor(private task: Task) {
-        super();
-    }
+	constructor(private task: Task) {
+		super();
+	}
 
-    override toMessages(): any[] {
-        return [{
-            role: 'user',
-            content: this.toPrompt(),
-        }]
-    }
+	override toMessages(): any[] {
+		return [
+			{
+				role: 'user',
+				content: this.toPrompt(),
+			},
+		];
+	}
 
-    toPrompt(): string {
-        return `%system% Task "${this.task.constructor.name}" stopped!`;
-    }
+	toPrompt(): string {
+		return `%system% Task "${this.task.constructor.name}" stopped!`;
+	}
 }
 
-
-
-
 export class AgentHurtObservation extends Observation {
-    get priority(): number {
-        return 3 + this.hits ** 2 + (20 - (this.bot.health ?? 20)) ** 0.9;
-    }
+	get priority(): number {
+		return 3 + this.hits ** 2 + (20 - (this.bot.health ?? 20)) ** 0.9;
+	}
 
-    shouldWake: boolean = false;
+	shouldWake: boolean = false;
 
-    private hits = 1;
-    private attackers: Entity[] = [];
+	private hits = 1;
+	private attackers: Entity[] = [];
 
-    constructor(private bot:Entity, attacker: Entity) {
-        super();
-        this.attackers.push(attacker);
-    }
+	constructor(
+		private bot: Entity,
+		attacker: Entity,
+	) {
+		super();
+		this.attackers.push(attacker);
+	}
 
-    toPrompt(): string {
-        const unique = [...new Map(this.attackers.filter(e => e !== undefined).map(e => [e.id, e])).values()];
+	toPrompt(): string {
+		const unique = [
+			...new Map(
+				this.attackers.filter((e) => e !== undefined).map((e) => [e.id, e]),
+			).values(),
+		];
 
-        return `%system% You have been hurt! Current HP: ${this.bot.health}. \nAttackers:\n${unique.map(Formatter.formatEntity).join('\n')}`;
-    }
+		return `%system% You have been hurt! Current HP: ${this.bot.health}. \nAttackers:\n${unique.map(Formatter.formatEntity).join('\n')}`;
+	}
 
-    override toMessages(): any[] {
-        return [{
-            role: 'user',
-            content: this.toPrompt(),
-        }]
-    }
+	override toMessages(): any[] {
+		return [
+			{
+				role: 'user',
+				content: this.toPrompt(),
+			},
+		];
+	}
 
-    override merge(other: Observation): boolean {
-        if (!(other instanceof AgentHurtObservation)) {return false;}
+	override merge(other: Observation): boolean {
+		if (!(other instanceof AgentHurtObservation)) {
+			return false;
+		}
 
-        this.hits += other.hits;
-        this.attackers.push(...other.attackers.filter(a => a !== undefined));
+		this.hits += other.hits;
+		this.attackers.push(...other.attackers.filter((a) => a !== undefined));
 
-        return true;
-    }
+		return true;
+	}
 }

@@ -1,165 +1,163 @@
-import mineflayer from "mineflayer";
-import {pathfinder} from 'mineflayer-pathfinder'
+import mineflayer from 'mineflayer';
+import { pathfinder } from 'mineflayer-pathfinder';
 
-import {OpenAI} from "openai";
-import {Agent} from "./Agent.ts";
-import {LLM} from "./LLM.ts";
+import { OpenAI } from 'openai';
+import { Agent } from './Agent.ts';
+import { LLM } from './LLM.ts';
 import {
-    AgentHurtObservation,
-    AgentJoinedObservation,
-    ChatObservation,
-    DayObservation,
-    DeathObservation,
-    ItemPickupObservation,
-    NightObservation,
-    PlayerJoinedObservation,
-    PlayerLeftObservation
-} from "./observation/Observation.ts";
-import {TaskManager} from "./tasks/TaskManager.ts";
-import minecraftData from "minecraft-data";
-import {Formatter} from "./utils/Formatter.ts";
+	AgentHurtObservation,
+	AgentJoinedObservation,
+	ChatObservation,
+	DayObservation,
+	DeathObservation,
+	ItemPickupObservation,
+	NightObservation,
+	PlayerJoinedObservation,
+	PlayerLeftObservation,
+} from './observation/Observation.ts';
+import { TaskManager } from './tasks/TaskManager.ts';
+import minecraftData from 'minecraft-data';
+import { Formatter } from './utils/Formatter.ts';
 
 const client = new OpenAI({
-    baseURL: 'http://localhost:11434/v1',
-    apiKey: 'ignored'
+	baseURL: 'http://localhost:11434/v1',
+	apiKey: 'ignored',
 });
 
 const llm = new LLM(client, 'gemma4:31b-cloud');
 
 const bot = mineflayer.createBot({
-    host: 'localhost',
-    username: llm.model.split(':')[0]!,
-    auth: 'offline'
-    // port: 25565,
-})
+	host: 'localhost',
+	username: llm.model.split(':')[0]!,
+	auth: 'offline',
+	// port: 25565,
+});
 
 // Log errors and kick reasons:
-bot.on('kicked', console.log)
-bot.on('error', console.log)
+bot.on('kicked', console.log);
+bot.on('error', console.log);
 
 export let agent: Agent;
 bot.once('spawn', () => {
-    agent = new Agent({
-        bot,
-        llm,
-        goalState: {
-            activeGoal: null,
-            activeSteps: [],
-            backlog: []
-        },
-        tasks: new TaskManager(),
-        mcData: minecraftData(bot.version),
-    })
+	agent = new Agent({
+		bot,
+		llm,
+		goalState: {
+			activeGoal: null,
+			activeSteps: [],
+			backlog: [],
+		},
+		tasks: new TaskManager(),
+		mcData: minecraftData(bot.version),
+	});
 
+	bot.on('message', async (message) => {
+		const translate = message.translate;
 
-    bot.on('message', async message => {
-        const translate = message.translate;
+		if (!translate) return;
 
-        if (!translate) return;
+		const texts: string[] = message.json.with.map((w: any) => w.text as string);
 
-        const texts: string[] = message.json.with.map((w: any) => w.text as string);
+		switch (translate) {
+			case '<%s> %s': {
+				// chat
+				const [username, msg] = texts;
+				console.log(`<${username}> ${msg}`);
 
-        switch (translate) {
-            case '<%s> %s': // chat
-            {
-                const [username, msg] = texts
-                console.log(`<${username}> ${msg}`);
+				if (username === bot.username) return;
 
-                if (username === bot.username) return;
+				agent.observe(new ChatObservation(username!, msg!));
 
-                agent.observe(new ChatObservation(username!, msg!))
+				break;
+			}
 
-                break;
-            }
+			case '%s whispers to you: %s': {
+				// whisper
+				const [username, msg] = texts;
+				console.log(message.toAnsi());
 
-            case '%s whispers to you: %s': // whisper
-            {
-                const [username, msg] = texts
-                console.log(message.toAnsi());
+				if (username === bot.username) return;
 
-                if (username === bot.username) return;
+				agent.observe(new ChatObservation(username!, msg!));
 
-                agent.observe(new ChatObservation(username!, msg!));
+				break;
+			}
 
-                break;
-            }
+			case 'You whisper to %s: %s': // whisper (self)
+				console.log(message.toAnsi());
 
-            case 'You whisper to %s: %s': // whisper (self)
-                console.log(message.toAnsi())
+				break;
 
-                break;
+			case 'multiplayer.player.joined': {
+				// player joined
+				const [username] = texts;
 
-            case 'multiplayer.player.joined': // player joined
-            {
-                const [username] = texts
+				console.log(message.toAnsi());
 
-                console.log(message.toAnsi())
+				agent.observe(new PlayerJoinedObservation(username!));
 
-                agent.observe(new PlayerJoinedObservation(username!))
+				break;
+			}
 
-                break;
-            }
+			case 'multiplayer.player.left': {
+				// player left
+				const [username] = texts;
 
-            case 'multiplayer.player.left': // player left
-            {
-                const [username] = texts
+				console.log(message.toAnsi());
 
-                console.log(message.toAnsi())
+				agent.observe(new PlayerLeftObservation(username!));
 
-                agent.observe(new PlayerLeftObservation(username!))
+				break;
+			}
 
-                break;
-            }
+			default:
+				if (translate.startsWith('death')) {
+					agent.observe(new DeathObservation(message.toString()));
+				}
 
-            default:
-                if (translate.startsWith('death')) {
-                    agent.observe(new DeathObservation(message.toString()))
-                }
+				// system message
+				console.log(message.toAnsi());
 
-                // system message
-                console.log(message.toAnsi());
+				break;
+		}
+	});
 
-                break;
-        }
-    })
+	bot.once('spawn', () => {
+		agent.observe(new AgentJoinedObservation());
+	});
 
-    bot.once('spawn', () => {
-        agent.observe(new AgentJoinedObservation())
-    })
+	let day = true;
+	bot.on('time', () => {
+		if (day !== bot.time.isDay) {
+			day = bot.time.isDay;
 
-    let day = true
-    bot.on('time', () => {
-        if (day !== bot.time.isDay) {
-            day = bot.time.isDay;
+			if (day) {
+				agent.observe(new DayObservation());
+			} else {
+				agent.observe(new NightObservation());
+			}
+		}
+	});
 
-            if (day) {
-                agent.observe(new DayObservation())
-            } else {
-                agent.observe(new NightObservation())
-            }
-        }
-    })
+	bot.on('physicsTick', () => {
+		agent.tick();
+	});
 
-    bot.on('physicsTick', () => {
-        agent.tick()
-    })
+	bot.on('playerCollect', (p, itemEntity) => {
+		if (p.username !== bot.username) return;
 
-    bot.on('playerCollect', (p, itemEntity) => {
-        if (p.username !== bot.username) return;
+		const item = itemEntity.getDroppedItem();
 
-        const item = itemEntity.getDroppedItem();
+		if (!item) return;
 
-        if (!item) return;
+		agent.observe(new ItemPickupObservation(item));
+	});
 
-        agent.observe(new ItemPickupObservation(item))
-    })
+	bot.on('entityHurt', (victim, attacker) => {
+		if (victim.username === bot.username) {
+			agent.observe(new AgentHurtObservation(victim, attacker));
+		}
+	});
+});
 
-    bot.on('entityHurt', (victim, attacker) => {
-        if (victim.username === bot.username) {
-            agent.observe(new AgentHurtObservation(victim, attacker));
-        }
-    })
-})
-
-
-bot.loadPlugin(pathfinder)
+bot.loadPlugin(pathfinder);

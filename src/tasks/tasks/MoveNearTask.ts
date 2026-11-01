@@ -2,8 +2,56 @@ import { Task } from '../Task.ts';
 import type { AgentContext } from '../../AgentContext.ts';
 import { goals, Movements } from 'mineflayer-pathfinder';
 import { Vec3 } from 'vec3';
+import type {Tool} from "../../tools/Tool.ts";
+import type {Bot} from "mineflayer";
 
 export class MoveNearTask extends Task {
+	private static movements: Movements;
+
+	static getMovements(bot: Bot): Movements {
+		if (MoveNearTask.movements) {
+			return MoveNearTask.movements;
+		}
+
+		const movements = new Movements(bot);
+		movements.canOpenDoors = true;
+
+		movements.blocksToAvoid.add(bot.registry.blocksByName['water']?.id!)
+
+		for (const block of Object.values(bot.registry.blocksByName)) {
+			if (
+				(block.name.includes('door') || block.name.includes('fence_gate'))
+				&& !block.name.includes('iron')
+			) {
+				movements.blocksCantBreak.add(block.id);
+			}
+		}
+
+		const originalGetBlock = movements.getBlock.bind(movements);
+
+		movements.getBlock = (pos, dx, dy, dz) => {
+			const info = originalGetBlock(pos, dx, dy, dz);
+
+			if (
+				(info.name.includes('door') || info.name.includes('fence_gate')) &&
+				!info.name.includes('iron')
+			) {
+				info.safe = true;
+
+				if (!info.getProperties().open) {
+					info.openable = true;
+				}
+
+				console.log(info);
+			}
+
+			return info;
+		};
+
+		MoveNearTask.movements = movements;
+		return MoveNearTask.movements;
+	}
+
 	private started = false;
 	private target = new Vec3(0, 0, 0); // set in constructor from x,y,z
 	private stuckPos: Vec3 | null = null;
@@ -86,8 +134,7 @@ export class MoveNearTask extends Task {
 				return;
 			}
 
-			const movements = new Movements(this.ctx.bot);
-			this.ctx.bot.pathfinder.setMovements(movements);
+			this.ctx.bot.pathfinder.setMovements(MoveNearTask.getMovements(this.ctx.bot));
 			this.ctx.bot.pathfinder.setGoal(
 				new goals.GoalNear(this.x, this.y, this.z, this.range ?? 1),
 			);

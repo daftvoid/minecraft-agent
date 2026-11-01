@@ -30,7 +30,7 @@ export class LLM {
 	async chat(
 		messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
 		tools: OpenAI.Chat.Completions.ChatCompletionTool[],
-	) {
+	): Promise<OpenAI.Chat.Completions.ChatCompletion & {_request_id?: string | null}> {
 		const res = await this.client.chat.completions.create({
 			model: this._model,
 			messages,

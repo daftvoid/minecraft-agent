@@ -50,7 +50,7 @@ export class Agent {
                     baseURL: 'http://localhost:11434/v1',
                     apiKey: 'ignored',
                 }),
-				'gemma4:31b-cloud'
+				'beam:cloud'
 			)
 		);
     }
